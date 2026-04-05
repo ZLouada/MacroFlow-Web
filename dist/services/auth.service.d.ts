@@ -1,4 +1,4 @@
-import { AuthenticatedUser } from '../types/index.js';
+import { AuthenticatedUser } from '../types/index';
 interface AuthTokens {
     accessToken: string;
     refreshToken: string;

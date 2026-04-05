@@ -1,19 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.labelService = void 0;
-const database_js_1 = require("../config/database.js");
-const errors_js_1 = require("../utils/errors.js");
+const database_1 = require("../config/database");
+const errors_1 = require("../utils/errors");
 exports.labelService = {
     // Get labels by project (using workspace since labels belong to workspace)
     async getLabelsByProject(projectId) {
-        const project = await database_js_1.prisma.project.findUnique({
+        const project = await database_1.prisma.project.findUnique({
             where: { id: projectId },
             include: { workspace: true },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
-        const labels = await database_js_1.prisma.label.findMany({
+        const labels = await database_1.prisma.label.findMany({
             where: { workspaceId: project.workspaceId },
             orderBy: { name: 'asc' },
             include: {
@@ -29,7 +29,7 @@ exports.labelService = {
     },
     // Get label by ID
     async getLabelById(labelId) {
-        const label = await database_js_1.prisma.label.findUnique({
+        const label = await database_1.prisma.label.findUnique({
             where: { id: labelId },
             include: {
                 _count: {
@@ -38,7 +38,7 @@ exports.labelService = {
             },
         });
         if (!label) {
-            throw new errors_js_1.NotFoundError('Label not found');
+            throw new errors_1.NotFoundError('Label not found');
         }
         return {
             ...label,
@@ -47,23 +47,23 @@ exports.labelService = {
     },
     // Create label (using project to get workspace)
     async createLabel(projectId, userId, data) {
-        const project = await database_js_1.prisma.project.findUnique({
+        const project = await database_1.prisma.project.findUnique({
             where: { id: projectId },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
         // Check if label with same name exists in workspace
-        const existing = await database_js_1.prisma.label.findFirst({
+        const existing = await database_1.prisma.label.findFirst({
             where: {
                 workspaceId: project.workspaceId,
                 name: data.name,
             },
         });
         if (existing) {
-            throw new errors_js_1.BadRequestError('Label with this name already exists');
+            throw new errors_1.BadRequestError('Label with this name already exists');
         }
-        const label = await database_js_1.prisma.label.create({
+        const label = await database_1.prisma.label.create({
             data: {
                 workspaceId: project.workspaceId,
                 name: data.name,
@@ -74,15 +74,15 @@ exports.labelService = {
     },
     // Update label
     async updateLabel(labelId, userId, data) {
-        const label = await database_js_1.prisma.label.findUnique({
+        const label = await database_1.prisma.label.findUnique({
             where: { id: labelId },
         });
         if (!label) {
-            throw new errors_js_1.NotFoundError('Label not found');
+            throw new errors_1.NotFoundError('Label not found');
         }
         // Check for duplicate name
         if (data.name && data.name !== label.name) {
-            const existing = await database_js_1.prisma.label.findFirst({
+            const existing = await database_1.prisma.label.findFirst({
                 where: {
                     workspaceId: label.workspaceId,
                     name: data.name,
@@ -90,10 +90,10 @@ exports.labelService = {
                 },
             });
             if (existing) {
-                throw new errors_js_1.BadRequestError('Label with this name already exists');
+                throw new errors_1.BadRequestError('Label with this name already exists');
             }
         }
-        const updated = await database_js_1.prisma.label.update({
+        const updated = await database_1.prisma.label.update({
             where: { id: labelId },
             data,
         });
@@ -101,14 +101,14 @@ exports.labelService = {
     },
     // Delete label
     async deleteLabel(labelId, userId) {
-        const label = await database_js_1.prisma.label.findUnique({
+        const label = await database_1.prisma.label.findUnique({
             where: { id: labelId },
         });
         if (!label) {
-            throw new errors_js_1.NotFoundError('Label not found');
+            throw new errors_1.NotFoundError('Label not found');
         }
         // This will cascade delete TaskLabel entries
-        await database_js_1.prisma.label.delete({
+        await database_1.prisma.label.delete({
             where: { id: labelId },
         });
         return { success: true };
@@ -116,11 +116,11 @@ exports.labelService = {
     // Get tasks with label
     async getTasksWithLabel(labelId, options = {}) {
         const { cursor, limit = 20 } = options;
-        const label = await database_js_1.prisma.label.findUnique({
+        const label = await database_1.prisma.label.findUnique({
             where: { id: labelId },
         });
         if (!label) {
-            throw new errors_js_1.NotFoundError('Label not found');
+            throw new errors_1.NotFoundError('Label not found');
         }
         const where = {
             labelId,
@@ -134,7 +134,7 @@ exports.labelService = {
                 id: { lt: cursor },
             };
         }
-        const taskLabels = await database_js_1.prisma.taskLabel.findMany({
+        const taskLabels = await database_1.prisma.taskLabel.findMany({
             where,
             take: limit + 1,
             orderBy: { createdAt: 'desc' },
@@ -173,29 +173,29 @@ exports.labelService = {
     // Merge labels
     async mergeLabels(sourceLabelId, targetLabelId, userId) {
         const [sourceLabel, targetLabel] = await Promise.all([
-            database_js_1.prisma.label.findUnique({ where: { id: sourceLabelId } }),
-            database_js_1.prisma.label.findUnique({ where: { id: targetLabelId } }),
+            database_1.prisma.label.findUnique({ where: { id: sourceLabelId } }),
+            database_1.prisma.label.findUnique({ where: { id: targetLabelId } }),
         ]);
         if (!sourceLabel || !targetLabel) {
-            throw new errors_js_1.NotFoundError('Label not found');
+            throw new errors_1.NotFoundError('Label not found');
         }
         if (sourceLabel.workspaceId !== targetLabel.workspaceId) {
-            throw new errors_js_1.BadRequestError('Labels must be in the same workspace');
+            throw new errors_1.BadRequestError('Labels must be in the same workspace');
         }
         // Get all tasks with source label
-        const taskLabels = await database_js_1.prisma.taskLabel.findMany({
+        const taskLabels = await database_1.prisma.taskLabel.findMany({
             where: { labelId: sourceLabelId },
         });
         // Add target label to tasks that don't already have it
         for (const tl of taskLabels) {
-            const existing = await database_js_1.prisma.taskLabel.findFirst({
+            const existing = await database_1.prisma.taskLabel.findFirst({
                 where: {
                     taskId: tl.taskId,
                     labelId: targetLabelId,
                 },
             });
             if (!existing) {
-                await database_js_1.prisma.taskLabel.create({
+                await database_1.prisma.taskLabel.create({
                     data: {
                         taskId: tl.taskId,
                         labelId: targetLabelId,
@@ -204,21 +204,21 @@ exports.labelService = {
             }
         }
         // Delete source label (cascades to TaskLabel entries)
-        await database_js_1.prisma.label.delete({
+        await database_1.prisma.label.delete({
             where: { id: sourceLabelId },
         });
         return targetLabel;
     },
     // Bulk add label to tasks
     async bulkAddLabelToTasks(labelId, taskIds, userId) {
-        const label = await database_js_1.prisma.label.findUnique({
+        const label = await database_1.prisma.label.findUnique({
             where: { id: labelId },
         });
         if (!label) {
-            throw new errors_js_1.NotFoundError('Label not found');
+            throw new errors_1.NotFoundError('Label not found');
         }
         // Get tasks that don't already have this label
-        const existingTaskLabels = await database_js_1.prisma.taskLabel.findMany({
+        const existingTaskLabels = await database_1.prisma.taskLabel.findMany({
             where: {
                 labelId,
                 taskId: { in: taskIds },
@@ -227,7 +227,7 @@ exports.labelService = {
         const existingTaskIds = new Set(existingTaskLabels.map((tl) => tl.taskId));
         const newTaskIds = taskIds.filter((id) => !existingTaskIds.has(id));
         if (newTaskIds.length > 0) {
-            await database_js_1.prisma.taskLabel.createMany({
+            await database_1.prisma.taskLabel.createMany({
                 data: newTaskIds.map((taskId) => ({ taskId, labelId })),
             });
         }
@@ -235,7 +235,7 @@ exports.labelService = {
     },
     // Bulk remove label from tasks
     async bulkRemoveLabelFromTasks(labelId, taskIds, userId) {
-        const result = await database_js_1.prisma.taskLabel.deleteMany({
+        const result = await database_1.prisma.taskLabel.deleteMany({
             where: {
                 labelId,
                 taskId: { in: taskIds },
@@ -245,7 +245,7 @@ exports.labelService = {
     },
     // Legacy methods for backwards compatibility
     async listLabels(workspaceId) {
-        const labels = await database_js_1.prisma.label.findMany({
+        const labels = await database_1.prisma.label.findMany({
             where: { workspaceId },
             orderBy: { name: 'asc' },
         });

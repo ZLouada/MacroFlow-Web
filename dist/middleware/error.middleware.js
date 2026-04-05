@@ -5,19 +5,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.validate = exports.asyncHandler = exports.notFoundHandler = exports.errorHandler = void 0;
 const zod_1 = require("zod");
-const errors_js_1 = require("../utils/errors.js");
-const logger_js_1 = require("../utils/logger.js");
-const index_js_1 = __importDefault(require("../config/index.js"));
+const errors_1 = require("../utils/errors");
+const logger_1 = require("../utils/logger");
+const index_1 = __importDefault(require("../config/index"));
 // ===========================================
 // Error Handler Middleware
 // ===========================================
 const errorHandler = (err, _req, res, _next) => {
-    if (err instanceof errors_js_1.AppError) {
+    if (err instanceof errors_1.AppError) {
         const response = {
             success: false,
             error: err.message,
         };
-        if (err instanceof errors_js_1.ValidationError && err.errors) {
+        if (err instanceof errors_1.ValidationError && err.errors) {
             response.errors = err.errors;
         }
         res.status(err.statusCode).json(response);
@@ -40,10 +40,10 @@ const errorHandler = (err, _req, res, _next) => {
         return;
     }
     // Log unexpected errors
-    logger_js_1.logger.error('Unexpected error:', err);
+    logger_1.logger.error('Unexpected error:', err);
     res.status(500).json({
         success: false,
-        error: index_js_1.default.server.isProduction
+        error: index_1.default.server.isProduction
             ? 'Internal Server Error'
             : err.message || 'Internal Server Error',
     });

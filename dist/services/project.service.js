@@ -1,8 +1,8 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.projectService = void 0;
-const database_js_1 = require("../config/database.js");
-const errors_js_1 = require("../utils/errors.js");
+const database_1 = require("../config/database");
+const errors_1 = require("../utils/errors");
 // ===========================================
 // Project Service
 // ===========================================
@@ -11,7 +11,7 @@ exports.projectService = {
      * Create a new project
      */
     async createProject(workspaceId, userId, data) {
-        const project = await database_js_1.prisma.project.create({
+        const project = await database_1.prisma.project.create({
             data: {
                 workspaceId,
                 name: data.name,
@@ -78,7 +78,7 @@ exports.projectService = {
                 ],
             }),
         };
-        const projects = await database_js_1.prisma.project.findMany({
+        const projects = await database_1.prisma.project.findMany({
             where,
             take: limit + 1,
             ...(options.cursor && {
@@ -109,7 +109,7 @@ exports.projectService = {
      * Get project by ID
      */
     async getProjectById(projectId) {
-        const project = await database_js_1.prisma.project.findFirst({
+        const project = await database_1.prisma.project.findFirst({
             where: {
                 id: projectId,
                 deletedAt: null,
@@ -141,7 +141,7 @@ exports.projectService = {
             },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
         return project;
     },
@@ -149,16 +149,16 @@ exports.projectService = {
      * Update project
      */
     async updateProject(projectId, data) {
-        const project = await database_js_1.prisma.project.findFirst({
+        const project = await database_1.prisma.project.findFirst({
             where: {
                 id: projectId,
                 deletedAt: null,
             },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
-        const updated = await database_js_1.prisma.project.update({
+        const updated = await database_1.prisma.project.update({
             where: { id: projectId },
             data: {
                 ...(data.name !== undefined && { name: data.name }),
@@ -184,16 +184,16 @@ exports.projectService = {
      * Delete project (soft delete)
      */
     async deleteProject(projectId) {
-        const project = await database_js_1.prisma.project.findFirst({
+        const project = await database_1.prisma.project.findFirst({
             where: {
                 id: projectId,
                 deletedAt: null,
             },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
-        await database_js_1.prisma.project.update({
+        await database_1.prisma.project.update({
             where: { id: projectId },
             data: { deletedAt: new Date() },
         });
@@ -210,7 +210,7 @@ exports.projectService = {
                 joinedAt: { lt: new Date(cursor) },
             }),
         };
-        const members = await database_js_1.prisma.projectMember.findMany({
+        const members = await database_1.prisma.projectMember.findMany({
             where,
             take: limit + 1,
             orderBy: { joinedAt: 'desc' },
@@ -245,7 +245,7 @@ exports.projectService = {
      * Add member to project
      */
     async addMember(projectId, userId, role) {
-        const project = await database_js_1.prisma.project.findUnique({
+        const project = await database_1.prisma.project.findUnique({
             where: { id: projectId },
             include: {
                 workspace: {
@@ -258,14 +258,14 @@ exports.projectService = {
             },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
         // Check if user is a workspace member
         if (project.workspace.members.length === 0) {
-            throw new errors_js_1.ForbiddenError('User must be a workspace member first');
+            throw new errors_1.ForbiddenError('User must be a workspace member first');
         }
         // Check if already a project member
-        const existingMember = await database_js_1.prisma.projectMember.findUnique({
+        const existingMember = await database_1.prisma.projectMember.findUnique({
             where: {
                 projectId_userId: {
                     projectId,
@@ -274,9 +274,9 @@ exports.projectService = {
             },
         });
         if (existingMember) {
-            throw new errors_js_1.ConflictError('User is already a member of this project');
+            throw new errors_1.ConflictError('User is already a member of this project');
         }
-        const member = await database_js_1.prisma.projectMember.create({
+        const member = await database_1.prisma.projectMember.create({
             data: {
                 projectId,
                 userId,
@@ -304,7 +304,7 @@ exports.projectService = {
      * Update member role
      */
     async updateMemberRole(projectId, userId, role) {
-        const member = await database_js_1.prisma.projectMember.findUnique({
+        const member = await database_1.prisma.projectMember.findUnique({
             where: {
                 projectId_userId: {
                     projectId,
@@ -313,9 +313,9 @@ exports.projectService = {
             },
         });
         if (!member) {
-            throw new errors_js_1.NotFoundError('Member not found');
+            throw new errors_1.NotFoundError('Member not found');
         }
-        const updated = await database_js_1.prisma.projectMember.update({
+        const updated = await database_1.prisma.projectMember.update({
             where: { id: member.id },
             data: { role: role },
             include: {
@@ -340,7 +340,7 @@ exports.projectService = {
      * Remove member from project
      */
     async removeMember(projectId, userId) {
-        const member = await database_js_1.prisma.projectMember.findUnique({
+        const member = await database_1.prisma.projectMember.findUnique({
             where: {
                 projectId_userId: {
                     projectId,
@@ -349,9 +349,9 @@ exports.projectService = {
             },
         });
         if (!member) {
-            throw new errors_js_1.NotFoundError('Member not found');
+            throw new errors_1.NotFoundError('Member not found');
         }
-        await database_js_1.prisma.projectMember.delete({
+        await database_1.prisma.projectMember.delete({
             where: { id: member.id },
         });
     },
@@ -384,7 +384,7 @@ exports.projectService = {
                 createdAt: { lt: new Date(cursor) },
             }),
         };
-        const tasks = await database_js_1.prisma.task.findMany({
+        const tasks = await database_1.prisma.task.findMany({
             where,
             take: limit + 1,
             orderBy: { createdAt: 'desc' },
@@ -431,7 +431,7 @@ exports.projectService = {
      * Get project board (Kanban view with columns and tasks)
      */
     async getProjectBoard(projectId) {
-        const project = await database_js_1.prisma.project.findFirst({
+        const project = await database_1.prisma.project.findFirst({
             where: {
                 id: projectId,
                 deletedAt: null,
@@ -469,7 +469,7 @@ exports.projectService = {
             },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
         return {
             projectId: project.id,
@@ -508,7 +508,7 @@ exports.projectService = {
                 ],
             }),
         };
-        const tasks = await database_js_1.prisma.task.findMany({
+        const tasks = await database_1.prisma.task.findMany({
             where,
             orderBy: [
                 { startDate: 'asc' },
@@ -562,7 +562,7 @@ exports.projectService = {
                 createdAt: { lt: new Date(cursor) },
             }),
         };
-        const activities = await database_js_1.prisma.activity.findMany({
+        const activities = await database_1.prisma.activity.findMany({
             where,
             take: limit + 1,
             orderBy: { createdAt: 'desc' },
@@ -597,7 +597,7 @@ exports.projectService = {
      * Get project labels
      */
     async getProjectLabels(projectId) {
-        const project = await database_js_1.prisma.project.findFirst({
+        const project = await database_1.prisma.project.findFirst({
             where: {
                 id: projectId,
                 deletedAt: null,
@@ -607,10 +607,10 @@ exports.projectService = {
             },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
         // Get workspace labels
-        const labels = await database_js_1.prisma.label.findMany({
+        const labels = await database_1.prisma.label.findMany({
             where: {
                 workspaceId: project.workspaceId,
             },
@@ -622,23 +622,23 @@ exports.projectService = {
      * Get project statistics
      */
     async getProjectStats(projectId) {
-        const project = await database_js_1.prisma.project.findFirst({
+        const project = await database_1.prisma.project.findFirst({
             where: {
                 id: projectId,
                 deletedAt: null,
             },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
         const [memberCount, taskStats, overdueTasks, completedThisWeek] = await Promise.all([
-            database_js_1.prisma.projectMember.count({ where: { projectId } }),
-            database_js_1.prisma.task.groupBy({
+            database_1.prisma.projectMember.count({ where: { projectId } }),
+            database_1.prisma.task.groupBy({
                 by: ['status'],
                 where: { projectId, deletedAt: null },
                 _count: true,
             }),
-            database_js_1.prisma.task.count({
+            database_1.prisma.task.count({
                 where: {
                     projectId,
                     deletedAt: null,
@@ -646,7 +646,7 @@ exports.projectService = {
                     dueDate: { lt: new Date() },
                 },
             }),
-            database_js_1.prisma.task.count({
+            database_1.prisma.task.count({
                 where: {
                     projectId,
                     deletedAt: null,
@@ -675,7 +675,7 @@ exports.projectService = {
      * Duplicate project
      */
     async duplicateProject(projectId, userId, options) {
-        const original = await database_js_1.prisma.project.findFirst({
+        const original = await database_1.prisma.project.findFirst({
             where: {
                 id: projectId,
                 deletedAt: null,
@@ -692,10 +692,10 @@ exports.projectService = {
             },
         });
         if (!original) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
         // Create new project
-        const newProject = await database_js_1.prisma.project.create({
+        const newProject = await database_1.prisma.project.create({
             data: {
                 workspaceId: original.workspaceId,
                 name: options.name || `${original.name} (Copy)`,
@@ -743,7 +743,7 @@ exports.projectService = {
         if (options.includeTasks && original.tasks && original.tasks.length > 0) {
             const columnMap = new Map(original.columns.map((oldCol, index) => [oldCol.id, newProject.columns[index].id]));
             for (const task of original.tasks) {
-                await database_js_1.prisma.task.create({
+                await database_1.prisma.task.create({
                     data: {
                         projectId: newProject.id,
                         columnId: columnMap.get(task.columnId) || newProject.columns[0].id,
@@ -768,16 +768,16 @@ exports.projectService = {
      * Archive project
      */
     async archiveProject(projectId) {
-        const project = await database_js_1.prisma.project.findFirst({
+        const project = await database_1.prisma.project.findFirst({
             where: {
                 id: projectId,
                 deletedAt: null,
             },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
-        const updated = await database_js_1.prisma.project.update({
+        const updated = await database_1.prisma.project.update({
             where: { id: projectId },
             data: { status: 'archived' },
         });
@@ -787,7 +787,7 @@ exports.projectService = {
      * Unarchive project
      */
     async unarchiveProject(projectId) {
-        const project = await database_js_1.prisma.project.findFirst({
+        const project = await database_1.prisma.project.findFirst({
             where: {
                 id: projectId,
                 deletedAt: null,
@@ -795,9 +795,9 @@ exports.projectService = {
             },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found or not archived');
+            throw new errors_1.NotFoundError('Project not found or not archived');
         }
-        const updated = await database_js_1.prisma.project.update({
+        const updated = await database_1.prisma.project.update({
             where: { id: projectId },
             data: { status: 'active' },
         });
@@ -807,14 +807,14 @@ exports.projectService = {
      * Update project settings
      */
     async updateProjectSettings(projectId, data) {
-        const project = await database_js_1.prisma.project.findFirst({
+        const project = await database_1.prisma.project.findFirst({
             where: {
                 id: projectId,
                 deletedAt: null,
             },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
         // For now, just return the project settings since we don't have a separate settings model
         // In a full implementation, you might have a ProjectSettings model

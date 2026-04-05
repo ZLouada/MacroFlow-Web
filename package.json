@@ -2,6 +2,7 @@
   "name": "macroflow",
   "version": "1.0.0",
   "description": "MacroFlow - Project Management and Macroeconomic Simulation Platform",
+  "type": "commonjs",
   "private": true,
   "scripts": {
     "backend:dev": "tsx watch src/server.ts",

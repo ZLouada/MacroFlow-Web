@@ -6,9 +6,9 @@ Object.defineProperty(exports, "__esModule", { value: true });
 exports.getSocketService = exports.initializeSocket = void 0;
 const socket_io_1 = require("socket.io");
 const jsonwebtoken_1 = __importDefault(require("jsonwebtoken"));
-const index_js_1 = require("../config/index.js");
-const database_js_1 = require("../config/database.js");
-const logger_js_1 = require("../utils/logger.js");
+const index_1 = require("../config/index");
+const database_1 = require("../config/database");
+const logger_1 = require("../utils/logger");
 const PRESENCE_COLORS = [
     '#EF4444', '#F97316', '#F59E0B', '#84CC16', '#22C55E',
     '#14B8A6', '#06B6D4', '#3B82F6', '#6366F1', '#8B5CF6',
@@ -21,8 +21,8 @@ const getRandomColor = () => PRESENCE_COLORS[Math.floor(Math.random() * PRESENCE
 const initializeSocket = (httpServer) => {
     io = new socket_io_1.Server(httpServer, {
         cors: {
-            origin: index_js_1.config.cors.origin,
-            credentials: index_js_1.config.cors.credentials,
+            origin: index_1.config.cors.origin,
+            credentials: index_1.config.cors.credentials,
         },
         pingTimeout: 60000,
         pingInterval: 25000,
@@ -34,8 +34,8 @@ const initializeSocket = (httpServer) => {
             if (!token) {
                 return next(new Error('Authentication required'));
             }
-            const payload = jsonwebtoken_1.default.verify(token, index_js_1.config.jwt.secret);
-            const user = await database_js_1.prisma.user.findUnique({
+            const payload = jsonwebtoken_1.default.verify(token, index_1.config.jwt.secret);
+            const user = await database_1.prisma.user.findUnique({
                 where: { id: payload.userId },
                 select: { id: true, name: true, avatar: true },
             });
@@ -48,7 +48,7 @@ const initializeSocket = (httpServer) => {
             next();
         }
         catch (error) {
-            logger_js_1.logger.error('Socket authentication error:', error);
+            logger_1.logger.error('Socket authentication error:', error);
             next(new Error('Invalid token'));
         }
     });
@@ -56,7 +56,7 @@ const initializeSocket = (httpServer) => {
         const userId = socket.userId;
         const userName = socket.userName;
         const userAvatar = socket.userAvatar ?? null;
-        logger_js_1.logger.info(`User connected: ${userName} (${socket.id})`);
+        logger_1.logger.info(`User connected: ${userName} (${socket.id})`);
         // Track connected user
         const color = getRandomColor();
         connectedUsers.set(socket.id, {
@@ -72,7 +72,7 @@ const initializeSocket = (httpServer) => {
         }
         userSockets.get(userId).add(socket.id);
         // Update presence in database
-        await database_js_1.prisma.userPresence.upsert({
+        await database_1.prisma.userPresence.upsert({
             where: { userId },
             create: {
                 visitorId: socket.id,
@@ -93,14 +93,14 @@ const initializeSocket = (httpServer) => {
         // ===========================================
         socket.on('join:workspace', (workspaceId) => {
             socket.join(`workspace:${workspaceId}`);
-            logger_js_1.logger.debug(`${userName} joined workspace:${workspaceId}`);
+            logger_1.logger.debug(`${userName} joined workspace:${workspaceId}`);
         });
         socket.on('leave:workspace', (workspaceId) => {
             socket.leave(`workspace:${workspaceId}`);
         });
         socket.on('join:project', (projectId) => {
             socket.join(`project:${projectId}`);
-            logger_js_1.logger.debug(`${userName} joined project:${projectId}`);
+            logger_1.logger.debug(`${userName} joined project:${projectId}`);
             // Broadcast presence to project members
             const presence = connectedUsers.get(socket.id);
             socket.to(`project:${projectId}`).emit('presence:joined', presence);
@@ -119,7 +119,7 @@ const initializeSocket = (httpServer) => {
         // Presence Updates
         // ===========================================
         socket.on('presence:update', async (data) => {
-            await database_js_1.prisma.userPresence.upsert({
+            await database_1.prisma.userPresence.upsert({
                 where: { userId },
                 create: {
                     visitorId: socket.id,
@@ -180,7 +180,7 @@ const initializeSocket = (httpServer) => {
         // Disconnect
         // ===========================================
         socket.on('disconnect', async () => {
-            logger_js_1.logger.info(`User disconnected: ${userName} (${socket.id})`);
+            logger_1.logger.info(`User disconnected: ${userName} (${socket.id})`);
             connectedUsers.delete(socket.id);
             const sockets = userSockets.get(userId);
             if (sockets) {
@@ -188,7 +188,7 @@ const initializeSocket = (httpServer) => {
                 if (sockets.size === 0) {
                     userSockets.delete(userId);
                     // Update presence to offline
-                    await database_js_1.prisma.userPresence.update({
+                    await database_1.prisma.userPresence.update({
                         where: { userId },
                         data: {
                             status: 'offline',

@@ -15,6 +15,6 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 // Jobs barrel export
-__exportStar(require("./queue.js"), exports);
-__exportStar(require("./workers.js"), exports);
+__exportStar(require("./queue"), exports);
+__exportStar(require("./workers"), exports);
 //# sourceMappingURL=index.js.map

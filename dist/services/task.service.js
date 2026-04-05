@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.taskService = void 0;
-const database_js_1 = require("../config/database.js");
-const errors_js_1 = require("../utils/errors.js");
-const activity_service_js_1 = require("./activity.service.js");
-const notification_service_js_1 = require("./notification.service.js");
-const upload_service_js_1 = require("./upload.service.js");
+const database_1 = require("../config/database");
+const errors_1 = require("../utils/errors");
+const activity_service_1 = require("./activity.service");
+const notification_service_1 = require("./notification.service");
+const upload_service_1 = require("./upload.service");
 exports.taskService = {
     // Get tasks by project (alias for controller)
     async getTasksByProject(projectId, filters) {
@@ -50,7 +50,7 @@ exports.taskService = {
             where.isMilestone = isMilestone === 'true';
         }
         const [tasks, total] = await Promise.all([
-            database_js_1.prisma.task.findMany({
+            database_1.prisma.task.findMany({
                 where,
                 skip,
                 take: limit,
@@ -76,7 +76,7 @@ exports.taskService = {
                     },
                 },
             }),
-            database_js_1.prisma.task.count({ where }),
+            database_1.prisma.task.count({ where }),
         ]);
         return {
             data: tasks.map((t) => ({
@@ -97,25 +97,25 @@ exports.taskService = {
     },
     // Create task
     async createTask(projectId, userId, data) {
-        const project = await database_js_1.prisma.project.findUnique({
+        const project = await database_1.prisma.project.findUnique({
             where: { id: projectId },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
         // Verify column belongs to project
-        const column = await database_js_1.prisma.kanbanColumn.findFirst({
+        const column = await database_1.prisma.kanbanColumn.findFirst({
             where: { id: data.columnId, projectId },
         });
         if (!column) {
-            throw new errors_js_1.BadRequestError('Invalid column');
+            throw new errors_1.BadRequestError('Invalid column');
         }
         // Get max order in column
-        const maxOrder = await database_js_1.prisma.task.aggregate({
+        const maxOrder = await database_1.prisma.task.aggregate({
             where: { columnId: data.columnId },
             _max: { order: true },
         });
-        const task = await database_js_1.prisma.task.create({
+        const task = await database_1.prisma.task.create({
             data: {
                 projectId,
                 columnId: data.columnId,
@@ -152,7 +152,7 @@ exports.taskService = {
                 column: true,
             },
         });
-        await activity_service_js_1.activityService.log({
+        await activity_service_1.activityService.log({
             workspaceId: project.workspaceId,
             projectId,
             taskId: task.id,
@@ -163,7 +163,7 @@ exports.taskService = {
         });
         // Notify assignee if different from creator
         if (data.assigneeId && data.assigneeId !== userId) {
-            await notification_service_js_1.notificationService.notifyTaskAssigned(task.id, data.assigneeId, userId);
+            await notification_service_1.notificationService.notifyTaskAssigned(task.id, data.assigneeId, userId);
         }
         return {
             ...task,
@@ -172,7 +172,7 @@ exports.taskService = {
     },
     // Get task by ID
     async getTaskById(taskId) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
             include: {
                 assignee: {
@@ -232,7 +232,7 @@ exports.taskService = {
             },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         return {
             ...task,
@@ -253,12 +253,12 @@ exports.taskService = {
     },
     // Update task
     async updateTask(taskId, userId, data) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
             include: { project: true },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         const updateData = {};
         if (data.title !== undefined)
@@ -291,7 +291,7 @@ exports.taskService = {
             updateData.isMilestone = data.isMilestone;
         if (data.columnId !== undefined)
             updateData.column = { connect: { id: data.columnId } };
-        const updated = await database_js_1.prisma.task.update({
+        const updated = await database_1.prisma.task.update({
             where: { id: taskId },
             data: updateData,
             include: {
@@ -307,7 +307,7 @@ exports.taskService = {
                 },
             },
         });
-        await activity_service_js_1.activityService.log({
+        await activity_service_1.activityService.log({
             workspaceId: task.project.workspaceId,
             projectId: task.projectId,
             taskId,
@@ -319,7 +319,7 @@ exports.taskService = {
         });
         // Notify new assignee
         if (data.assigneeId && data.assigneeId !== task.assigneeId && data.assigneeId !== userId) {
-            await notification_service_js_1.notificationService.notifyTaskAssigned(taskId, data.assigneeId, userId);
+            await notification_service_1.notificationService.notifyTaskAssigned(taskId, data.assigneeId, userId);
         }
         return {
             ...updated,
@@ -328,19 +328,19 @@ exports.taskService = {
     },
     // Delete task (soft delete)
     async deleteTask(taskId, userId) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
             include: { project: true },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
-        await database_js_1.prisma.task.update({
+        await database_1.prisma.task.update({
             where: { id: taskId },
             data: { deletedAt: new Date() },
         });
         if (userId) {
-            await activity_service_js_1.activityService.log({
+            await activity_service_1.activityService.log({
                 workspaceId: task.project.workspaceId,
                 projectId: task.projectId,
                 taskId,
@@ -353,31 +353,31 @@ exports.taskService = {
     },
     // Move task to column
     async moveTask(taskId, userId, columnId, position) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
             include: { project: true, column: true },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
-        const newColumn = await database_js_1.prisma.kanbanColumn.findFirst({
+        const newColumn = await database_1.prisma.kanbanColumn.findFirst({
             where: { id: columnId, projectId: task.projectId },
         });
         if (!newColumn) {
-            throw new errors_js_1.BadRequestError('Invalid column');
+            throw new errors_1.BadRequestError('Invalid column');
         }
         // Check task limit
         if (newColumn.taskLimit) {
-            const tasksInColumn = await database_js_1.prisma.task.count({
+            const tasksInColumn = await database_1.prisma.task.count({
                 where: { columnId, deletedAt: null, id: { not: taskId } },
             });
             if (tasksInColumn >= newColumn.taskLimit) {
-                throw new errors_js_1.BadRequestError(`Column "${newColumn.title}" has reached its task limit`);
+                throw new errors_1.BadRequestError(`Column "${newColumn.title}" has reached its task limit`);
             }
         }
         const fromColumnId = task.columnId;
         // Update task
-        const updated = await database_js_1.prisma.task.update({
+        const updated = await database_1.prisma.task.update({
             where: { id: taskId },
             data: {
                 columnId,
@@ -396,7 +396,7 @@ exports.taskService = {
             },
         });
         // Reorder other tasks in the target column
-        await database_js_1.prisma.task.updateMany({
+        await database_1.prisma.task.updateMany({
             where: {
                 columnId,
                 order: { gte: position },
@@ -407,7 +407,7 @@ exports.taskService = {
                 order: { increment: 1 },
             },
         });
-        await activity_service_js_1.activityService.log({
+        await activity_service_1.activityService.log({
             workspaceId: task.project.workspaceId,
             projectId: task.projectId,
             taskId,
@@ -426,18 +426,18 @@ exports.taskService = {
     },
     // Reorder task within column
     async reorderTask(taskId, userId, position) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
             include: { project: true },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         const oldPosition = task.order;
         // Update positions of other tasks
         if (position < oldPosition) {
             // Moving up - increment tasks between new and old position
-            await database_js_1.prisma.task.updateMany({
+            await database_1.prisma.task.updateMany({
                 where: {
                     columnId: task.columnId,
                     order: { gte: position, lt: oldPosition },
@@ -451,7 +451,7 @@ exports.taskService = {
         }
         else if (position > oldPosition) {
             // Moving down - decrement tasks between old and new position
-            await database_js_1.prisma.task.updateMany({
+            await database_1.prisma.task.updateMany({
                 where: {
                     columnId: task.columnId,
                     order: { gt: oldPosition, lte: position },
@@ -463,7 +463,7 @@ exports.taskService = {
                 },
             });
         }
-        const updated = await database_js_1.prisma.task.update({
+        const updated = await database_1.prisma.task.update({
             where: { id: taskId },
             data: { order: position },
             include: {
@@ -480,14 +480,14 @@ exports.taskService = {
     },
     // Assign task
     async assignTask(taskId, userId, assigneeId) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
             include: { project: true },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
-        const updated = await database_js_1.prisma.task.update({
+        const updated = await database_1.prisma.task.update({
             where: { id: taskId },
             data: {
                 assignee: assigneeId ? { connect: { id: assigneeId } } : { disconnect: true },
@@ -502,7 +502,7 @@ exports.taskService = {
                 },
             },
         });
-        await activity_service_js_1.activityService.log({
+        await activity_service_1.activityService.log({
             workspaceId: task.project.workspaceId,
             projectId: task.projectId,
             taskId,
@@ -513,24 +513,24 @@ exports.taskService = {
             metadata: { assigneeId },
         });
         if (assigneeId && assigneeId !== userId) {
-            await notification_service_js_1.notificationService.notifyTaskAssigned(taskId, assigneeId, userId);
+            await notification_service_1.notificationService.notifyTaskAssigned(taskId, assigneeId, userId);
         }
         return updated;
     },
     // Unassign user from task
     async unassignTask(taskId, userId, targetUserId) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
             include: { project: true },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         // Only unassign if the target user is currently assigned
         if (task.assigneeId !== targetUserId) {
-            throw new errors_js_1.BadRequestError('User is not assigned to this task');
+            throw new errors_1.BadRequestError('User is not assigned to this task');
         }
-        const updated = await database_js_1.prisma.task.update({
+        const updated = await database_1.prisma.task.update({
             where: { id: taskId },
             data: {
                 assignee: { disconnect: true },
@@ -545,7 +545,7 @@ exports.taskService = {
                 },
             },
         });
-        await activity_service_js_1.activityService.log({
+        await activity_service_1.activityService.log({
             workspaceId: task.project.workspaceId,
             projectId: task.projectId,
             taskId,
@@ -559,31 +559,31 @@ exports.taskService = {
     },
     // Add label to task
     async addLabelToTask(taskId, userId, labelId) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
             include: { project: { include: { workspace: true } } },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         // Check if label exists and belongs to the same workspace
-        const label = await database_js_1.prisma.label.findFirst({
+        const label = await database_1.prisma.label.findFirst({
             where: { id: labelId, workspaceId: task.project.workspaceId },
         });
         if (!label) {
-            throw new errors_js_1.NotFoundError('Label not found');
+            throw new errors_1.NotFoundError('Label not found');
         }
         // Check if already assigned
-        const existing = await database_js_1.prisma.taskLabel.findFirst({
+        const existing = await database_1.prisma.taskLabel.findFirst({
             where: { taskId, labelId },
         });
         if (existing) {
-            throw new errors_js_1.BadRequestError('Label already assigned to task');
+            throw new errors_1.BadRequestError('Label already assigned to task');
         }
-        await database_js_1.prisma.taskLabel.create({
+        await database_1.prisma.taskLabel.create({
             data: { taskId, labelId },
         });
-        const updated = await database_js_1.prisma.task.findUnique({
+        const updated = await database_1.prisma.task.findUnique({
             where: { id: taskId },
             include: {
                 labels: {
@@ -605,16 +605,16 @@ exports.taskService = {
     },
     // Remove label from task
     async removeLabelFromTask(taskId, userId, labelId) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
-        await database_js_1.prisma.taskLabel.deleteMany({
+        await database_1.prisma.taskLabel.deleteMany({
             where: { taskId, labelId },
         });
-        const updated = await database_js_1.prisma.task.findUnique({
+        const updated = await database_1.prisma.task.findUnique({
             where: { id: taskId },
             include: {
                 labels: {
@@ -636,20 +636,20 @@ exports.taskService = {
     },
     // Update labels (bulk)
     async updateLabels(taskId, labelIds) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         // Remove existing labels and add new ones
-        await database_js_1.prisma.$transaction([
-            database_js_1.prisma.taskLabel.deleteMany({ where: { taskId } }),
-            database_js_1.prisma.taskLabel.createMany({
+        await database_1.prisma.$transaction([
+            database_1.prisma.taskLabel.deleteMany({ where: { taskId } }),
+            database_1.prisma.taskLabel.createMany({
                 data: labelIds.map((labelId) => ({ taskId, labelId })),
             }),
         ]);
-        const updated = await database_js_1.prisma.task.findUnique({
+        const updated = await database_1.prisma.task.findUnique({
             where: { id: taskId },
             include: {
                 labels: {
@@ -662,26 +662,26 @@ exports.taskService = {
     // Add dependency
     async addDependency(taskId, userId, dependsOnId, type = 'finishToStart') {
         const [task, dependsOnTask] = await Promise.all([
-            database_js_1.prisma.task.findFirst({ where: { id: taskId, deletedAt: null }, include: { project: true } }),
-            database_js_1.prisma.task.findFirst({ where: { id: dependsOnId, deletedAt: null } }),
+            database_1.prisma.task.findFirst({ where: { id: taskId, deletedAt: null }, include: { project: true } }),
+            database_1.prisma.task.findFirst({ where: { id: dependsOnId, deletedAt: null } }),
         ]);
         if (!task || !dependsOnTask) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         if (task.projectId !== dependsOnTask.projectId) {
-            throw new errors_js_1.BadRequestError('Tasks must be in the same project');
+            throw new errors_1.BadRequestError('Tasks must be in the same project');
         }
         // Check for circular dependency
-        const existingReverse = await database_js_1.prisma.taskDependency.findFirst({
+        const existingReverse = await database_1.prisma.taskDependency.findFirst({
             where: {
                 taskId: dependsOnId,
                 dependsOnTaskId: taskId,
             },
         });
         if (existingReverse) {
-            throw new errors_js_1.BadRequestError('Circular dependency detected');
+            throw new errors_1.BadRequestError('Circular dependency detected');
         }
-        const dependency = await database_js_1.prisma.taskDependency.create({
+        const dependency = await database_1.prisma.taskDependency.create({
             data: {
                 taskId,
                 dependsOnTaskId: dependsOnId,
@@ -697,7 +697,7 @@ exports.taskService = {
                 },
             },
         });
-        await activity_service_js_1.activityService.log({
+        await activity_service_1.activityService.log({
             workspaceId: task.project.workspaceId,
             projectId: task.projectId,
             taskId,
@@ -711,23 +711,23 @@ exports.taskService = {
     },
     // Remove dependency
     async removeDependency(taskId, userId, dependencyId) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
             include: { project: true },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
-        const dependency = await database_js_1.prisma.taskDependency.findFirst({
+        const dependency = await database_1.prisma.taskDependency.findFirst({
             where: { id: dependencyId, taskId },
         });
         if (!dependency) {
-            throw new errors_js_1.NotFoundError('Dependency not found');
+            throw new errors_1.NotFoundError('Dependency not found');
         }
-        await database_js_1.prisma.taskDependency.delete({
+        await database_1.prisma.taskDependency.delete({
             where: { id: dependencyId },
         });
-        await activity_service_js_1.activityService.log({
+        await activity_service_1.activityService.log({
             workspaceId: task.project.workspaceId,
             projectId: task.projectId,
             taskId,
@@ -742,11 +742,11 @@ exports.taskService = {
     // Get task comments
     async getTaskComments(taskId, options) {
         const { cursor, limit = 20 } = options;
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         const where = {
             taskId,
@@ -755,7 +755,7 @@ exports.taskService = {
         if (cursor) {
             where.id = { lt: cursor };
         }
-        const comments = await database_js_1.prisma.comment.findMany({
+        const comments = await database_1.prisma.comment.findMany({
             where,
             take: limit + 1,
             orderBy: { createdAt: 'desc' },
@@ -784,13 +784,13 @@ exports.taskService = {
     },
     // Get task attachments
     async getTaskAttachments(taskId) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
-        const attachments = await database_js_1.prisma.attachment.findMany({
+        const attachments = await database_1.prisma.attachment.findMany({
             where: { taskId },
             orderBy: { uploadedAt: 'desc' },
             include: {
@@ -807,15 +807,15 @@ exports.taskService = {
     },
     // Add attachment to task
     async addAttachment(taskId, userId, file) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
             include: { project: true },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         // Upload file to S3
-        const uploadResult = await upload_service_js_1.uploadService.uploadFile({
+        const uploadResult = await upload_service_1.uploadService.uploadFile({
             fieldname: file.fieldname,
             originalname: file.originalname,
             encoding: file.encoding,
@@ -823,7 +823,7 @@ exports.taskService = {
             buffer: file.buffer,
             size: file.size,
         }, 'tasks/attachments', taskId);
-        const attachment = await database_js_1.prisma.attachment.create({
+        const attachment = await database_1.prisma.attachment.create({
             data: {
                 taskId,
                 name: file.originalname,
@@ -842,7 +842,7 @@ exports.taskService = {
                 },
             },
         });
-        await activity_service_js_1.activityService.log({
+        await activity_service_1.activityService.log({
             workspaceId: task.project.workspaceId,
             projectId: task.projectId,
             taskId,
@@ -856,15 +856,15 @@ exports.taskService = {
     },
     // Delete attachment from task
     async deleteAttachment(taskId, attachmentId) {
-        const attachment = await database_js_1.prisma.attachment.findFirst({
+        const attachment = await database_1.prisma.attachment.findFirst({
             where: { id: attachmentId, taskId },
         });
         if (!attachment) {
-            throw new errors_js_1.NotFoundError('Attachment not found');
+            throw new errors_1.NotFoundError('Attachment not found');
         }
         // Delete from S3
-        await upload_service_js_1.uploadService.deleteFile(attachment.url);
-        await database_js_1.prisma.attachment.delete({
+        await upload_service_1.uploadService.deleteFile(attachment.url);
+        await database_1.prisma.attachment.delete({
             where: { id: attachmentId },
         });
         return { success: true };
@@ -872,11 +872,11 @@ exports.taskService = {
     // Get task activity
     async getTaskActivity(taskId, options) {
         const { cursor, limit = 20 } = options;
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         const where = {
             taskId,
@@ -884,7 +884,7 @@ exports.taskService = {
         if (cursor) {
             where.id = { lt: cursor };
         }
-        const activities = await database_js_1.prisma.activity.findMany({
+        const activities = await database_1.prisma.activity.findMany({
             where,
             take: limit + 1,
             orderBy: { createdAt: 'desc' },
@@ -912,20 +912,20 @@ exports.taskService = {
     },
     // Create subtask (note: schema doesn't have parentId, so this creates a regular task linked to same project)
     async createSubtask(parentTaskId, userId, data) {
-        const parentTask = await database_js_1.prisma.task.findFirst({
+        const parentTask = await database_1.prisma.task.findFirst({
             where: { id: parentTaskId, deletedAt: null },
             include: { project: true, column: true },
         });
         if (!parentTask) {
-            throw new errors_js_1.NotFoundError('Parent task not found');
+            throw new errors_1.NotFoundError('Parent task not found');
         }
         // Get max order for tasks in the same column
-        const maxOrder = await database_js_1.prisma.task.aggregate({
+        const maxOrder = await database_1.prisma.task.aggregate({
             where: { columnId: parentTask.columnId },
             _max: { order: true },
         });
         // Create a new task (as schema doesn't support subtasks with parentId)
-        const subtask = await database_js_1.prisma.task.create({
+        const subtask = await database_1.prisma.task.create({
             data: {
                 projectId: parentTask.projectId,
                 columnId: parentTask.columnId,
@@ -949,14 +949,14 @@ exports.taskService = {
             },
         });
         // Create a dependency to link subtask to parent
-        await database_js_1.prisma.taskDependency.create({
+        await database_1.prisma.taskDependency.create({
             data: {
                 taskId: subtask.id,
                 dependsOnTaskId: parentTaskId,
                 type: 'finishToStart',
             },
         });
-        await activity_service_js_1.activityService.log({
+        await activity_service_1.activityService.log({
             workspaceId: parentTask.project.workspaceId,
             projectId: parentTask.projectId,
             taskId: subtask.id,
@@ -970,14 +970,14 @@ exports.taskService = {
     },
     // Get subtasks (tasks that depend on this task)
     async getSubtasks(taskId) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         // Get tasks that have this task as a dependency (simulating subtasks)
-        const dependents = await database_js_1.prisma.taskDependency.findMany({
+        const dependents = await database_1.prisma.taskDependency.findMany({
             where: { dependsOnTaskId: taskId },
             include: {
                 task: {
@@ -997,7 +997,7 @@ exports.taskService = {
     },
     // Duplicate task
     async duplicateTask(taskId, userId, options) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
             include: {
                 labels: true,
@@ -1005,15 +1005,15 @@ exports.taskService = {
             },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         // Get max order
-        const maxOrder = await database_js_1.prisma.task.aggregate({
+        const maxOrder = await database_1.prisma.task.aggregate({
             where: { columnId: task.columnId },
             _max: { order: true },
         });
         // Create duplicate
-        const duplicate = await database_js_1.prisma.task.create({
+        const duplicate = await database_1.prisma.task.create({
             data: {
                 projectId: task.projectId,
                 columnId: task.columnId,
@@ -1045,7 +1045,7 @@ exports.taskService = {
                 },
             },
         });
-        await activity_service_js_1.activityService.log({
+        await activity_service_1.activityService.log({
             workspaceId: task.project.workspaceId,
             projectId: task.projectId,
             taskId: duplicate.id,
@@ -1062,11 +1062,11 @@ exports.taskService = {
     },
     // Watch task (using activity/notification subscription - no dedicated table in schema)
     async watchTask(taskId, userId) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         // Since there's no TaskWatcher table, we can implement this via user preferences or return success
         // For now, we'll just return success (watching can be implemented via frontend state or extended schema)
@@ -1074,31 +1074,31 @@ exports.taskService = {
     },
     // Unwatch task
     async unwatchTask(taskId, userId) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         return { success: true, message: 'Task watch status updated' };
     },
     // Log time (using actualHours field since there's no TimeLog table)
     async logTime(taskId, userId, data) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
             include: { project: true },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         // Add logged time to actualHours
         const hoursToAdd = data.minutes / 60;
         const newActualHours = (task.actualHours || 0) + hoursToAdd;
-        await database_js_1.prisma.task.update({
+        await database_1.prisma.task.update({
             where: { id: taskId },
             data: { actualHours: newActualHours },
         });
-        await activity_service_js_1.activityService.log({
+        await activity_service_1.activityService.log({
             workspaceId: task.project.workspaceId,
             projectId: task.projectId,
             taskId,
@@ -1124,11 +1124,11 @@ exports.taskService = {
     // Get time logs (from activity log since there's no TimeLog table)
     async getTimeLogs(taskId, options) {
         const { cursor, limit = 20, userId } = options;
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         // Get activities where time was logged
         // Note: MongoDB JSON filtering is limited, so we filter metadata in post-processing
@@ -1142,7 +1142,7 @@ exports.taskService = {
         if (cursor) {
             where.id = { lt: cursor };
         }
-        const activities = await database_js_1.prisma.activity.findMany({
+        const activities = await database_1.prisma.activity.findMany({
             where,
             take: limit + 1,
             orderBy: { createdAt: 'desc' },
@@ -1180,14 +1180,14 @@ exports.taskService = {
     },
     // Bulk update tasks
     async bulkUpdateTasks(taskIds, userId, updates) {
-        const tasks = await database_js_1.prisma.task.findMany({
+        const tasks = await database_1.prisma.task.findMany({
             where: { id: { in: taskIds }, deletedAt: null },
             include: { project: true },
         });
         if (tasks.length === 0) {
-            throw new errors_js_1.NotFoundError('No tasks found');
+            throw new errors_1.NotFoundError('No tasks found');
         }
-        await database_js_1.prisma.task.updateMany({
+        await database_1.prisma.task.updateMany({
             where: { id: { in: taskIds } },
             data: {
                 ...(updates.status !== undefined && { status: updates.status }),
@@ -1199,7 +1199,7 @@ exports.taskService = {
         });
         // Log activity for each task
         for (const task of tasks) {
-            await activity_service_js_1.activityService.log({
+            await activity_service_1.activityService.log({
                 workspaceId: task.project.workspaceId,
                 projectId: task.projectId,
                 taskId: task.id,
@@ -1211,7 +1211,7 @@ exports.taskService = {
             });
         }
         // Fetch updated tasks
-        const updatedTasks = await database_js_1.prisma.task.findMany({
+        const updatedTasks = await database_1.prisma.task.findMany({
             where: { id: { in: taskIds } },
             include: {
                 assignee: {
@@ -1233,7 +1233,7 @@ exports.taskService = {
     },
     // Bulk delete tasks
     async bulkDeleteTasks(taskIds) {
-        const result = await database_js_1.prisma.task.updateMany({
+        const result = await database_1.prisma.task.updateMany({
             where: { id: { in: taskIds }, deletedAt: null },
             data: { deletedAt: new Date() },
         });
@@ -1241,7 +1241,7 @@ exports.taskService = {
     },
     // Get Gantt data
     async getGanttData(projectId) {
-        const tasks = await database_js_1.prisma.task.findMany({
+        const tasks = await database_1.prisma.task.findMany({
             where: { projectId, deletedAt: null },
             include: {
                 assignee: {
@@ -1284,21 +1284,21 @@ exports.taskService = {
     },
     // Update dates (for Gantt drag)
     async updateDates(taskId, userId, startDate, endDate) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
             include: { project: true },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
-        const updated = await database_js_1.prisma.task.update({
+        const updated = await database_1.prisma.task.update({
             where: { id: taskId },
             data: {
                 startDate: startDate !== undefined ? (startDate ? new Date(startDate) : null) : undefined,
                 endDate: endDate !== undefined ? (endDate ? new Date(endDate) : null) : undefined,
             },
         });
-        await activity_service_js_1.activityService.log({
+        await activity_service_1.activityService.log({
             workspaceId: task.project.workspaceId,
             projectId: task.projectId,
             taskId,
@@ -1312,18 +1312,18 @@ exports.taskService = {
     },
     // Update progress
     async updateProgress(taskId, userId, progress) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
             include: { project: true },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
-        const updated = await database_js_1.prisma.task.update({
+        const updated = await database_1.prisma.task.update({
             where: { id: taskId },
             data: { progress },
         });
-        await activity_service_js_1.activityService.log({
+        await activity_service_1.activityService.log({
             workspaceId: task.project.workspaceId,
             projectId: task.projectId,
             taskId,
@@ -1335,7 +1335,7 @@ exports.taskService = {
         });
         // Check if task is complete
         if (progress === 100 && task.assigneeId) {
-            await notification_service_js_1.notificationService.notifyTaskCompleted(taskId);
+            await notification_service_1.notificationService.notifyTaskCompleted(taskId);
         }
         return updated;
     },

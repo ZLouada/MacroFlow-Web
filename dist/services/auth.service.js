@@ -10,10 +10,10 @@ const crypto_1 = __importDefault(require("crypto"));
 const uuid_1 = require("uuid");
 const otplib_1 = require("otplib");
 const qrcode_1 = __importDefault(require("qrcode"));
-const database_js_1 = require("../config/database.js");
-const index_js_1 = require("../config/index.js");
-const errors_js_1 = require("../utils/errors.js");
-const email_service_js_1 = require("./email.service.js");
+const database_1 = require("../config/database");
+const index_1 = require("../config/index");
+const errors_1 = require("../utils/errors");
+const email_service_1 = require("./email.service");
 const SALT_ROUNDS = 12;
 const ACCESS_TOKEN_EXPIRES = '15m';
 const REFRESH_TOKEN_EXPIRES = '7d';
@@ -29,10 +29,10 @@ const generateTokens = async (userId, sessionId, email, role) => {
         userId,
         sessionId,
     };
-    const accessToken = jsonwebtoken_1.default.sign(accessPayload, index_js_1.config.jwt.secret, {
+    const accessToken = jsonwebtoken_1.default.sign(accessPayload, index_1.config.jwt.secret, {
         expiresIn: ACCESS_TOKEN_EXPIRES,
     });
-    const refreshToken = jsonwebtoken_1.default.sign(refreshPayload, index_js_1.config.jwt.refreshSecret, {
+    const refreshToken = jsonwebtoken_1.default.sign(refreshPayload, index_1.config.jwt.refreshSecret, {
         expiresIn: REFRESH_TOKEN_EXPIRES,
     });
     return {
@@ -70,15 +70,15 @@ exports.authService = {
      * Register a new user
      */
     async register(data) {
-        const existingUser = await database_js_1.prisma.user.findUnique({
+        const existingUser = await database_1.prisma.user.findUnique({
             where: { email: data.email.toLowerCase() },
         });
         if (existingUser) {
-            throw new errors_js_1.ConflictError('Email already registered');
+            throw new errors_1.ConflictError('Email already registered');
         }
         const hashedPassword = await bcryptjs_1.default.hash(data.password, SALT_ROUNDS);
         const name = `${data.firstName} ${data.lastName}`.trim();
-        const user = await database_js_1.prisma.user.create({
+        const user = await database_1.prisma.user.create({
             data: {
                 email: data.email.toLowerCase(),
                 password: hashedPassword,
@@ -90,7 +90,7 @@ exports.authService = {
         });
         // Create email verification token
         const verificationToken = (0, uuid_1.v4)();
-        await database_js_1.prisma.emailVerification.create({
+        await database_1.prisma.emailVerification.create({
             data: {
                 userId: user.id,
                 token: verificationToken,
@@ -98,7 +98,7 @@ exports.authService = {
             },
         });
         // Send verification email
-        await email_service_js_1.emailService.sendVerificationEmail(user.email, user.name, verificationToken);
+        await email_service_1.emailService.sendVerificationEmail(user.email, user.name, verificationToken);
         const authenticatedUser = {
             id: user.id,
             email: user.email,
@@ -114,15 +114,15 @@ exports.authService = {
      * Login user
      */
     async login(data) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { email: data.email.toLowerCase(), deletedAt: null },
         });
         if (!user) {
-            throw new errors_js_1.UnauthorizedError('Invalid email or password');
+            throw new errors_1.UnauthorizedError('Invalid email or password');
         }
         const isValidPassword = await bcryptjs_1.default.compare(data.password, user.password);
         if (!isValidPassword) {
-            throw new errors_js_1.UnauthorizedError('Invalid email or password');
+            throw new errors_1.UnauthorizedError('Invalid email or password');
         }
         // Check 2FA if enabled
         if (user.twoFactorEnabled) {
@@ -130,14 +130,14 @@ exports.authService = {
                 return { requiresTwoFactor: true, user: null, accessToken: null, refreshToken: null, expiresIn: null };
             }
             if (!user.twoFactorSecret) {
-                throw new errors_js_1.BadRequestError('2FA not properly configured');
+                throw new errors_1.BadRequestError('2FA not properly configured');
             }
             // Check if it's a backup code
             const backupCodes = user.backupCodes || [];
             const isBackupCode = backupCodes.includes(data.twoFactorCode);
             if (isBackupCode) {
                 // Remove used backup code
-                await database_js_1.prisma.user.update({
+                await database_1.prisma.user.update({
                     where: { id: user.id },
                     data: {
                         backupCodes: backupCodes.filter(code => code !== data.twoFactorCode),
@@ -150,14 +150,14 @@ exports.authService = {
                     secret: user.twoFactorSecret,
                 });
                 if (!isValidCode) {
-                    throw new errors_js_1.UnauthorizedError('Invalid 2FA code');
+                    throw new errors_1.UnauthorizedError('Invalid 2FA code');
                 }
             }
         }
         // Create session
         const sessionId = (0, uuid_1.v4)();
         const tokens = await generateTokens(user.id, sessionId, user.email, user.role);
-        await database_js_1.prisma.session.create({
+        await database_1.prisma.session.create({
             data: {
                 id: sessionId,
                 userId: user.id,
@@ -189,8 +189,8 @@ exports.authService = {
      */
     async logout(refreshToken) {
         try {
-            const payload = jsonwebtoken_1.default.verify(refreshToken, index_js_1.config.jwt.refreshSecret);
-            await database_js_1.prisma.session.deleteMany({
+            const payload = jsonwebtoken_1.default.verify(refreshToken, index_1.config.jwt.refreshSecret);
+            await database_1.prisma.session.deleteMany({
                 where: {
                     id: payload.sessionId,
                     refreshToken,
@@ -206,8 +206,8 @@ exports.authService = {
      */
     async refreshToken(refreshToken, userAgent, ipAddress) {
         try {
-            const payload = jsonwebtoken_1.default.verify(refreshToken, index_js_1.config.jwt.refreshSecret);
-            const session = await database_js_1.prisma.session.findFirst({
+            const payload = jsonwebtoken_1.default.verify(refreshToken, index_1.config.jwt.refreshSecret);
+            const session = await database_1.prisma.session.findFirst({
                 where: {
                     id: payload.sessionId,
                     userId: payload.userId,
@@ -217,15 +217,15 @@ exports.authService = {
                 include: { user: true },
             });
             if (!session || session.user.deletedAt) {
-                throw new errors_js_1.UnauthorizedError('Invalid or expired refresh token');
+                throw new errors_1.UnauthorizedError('Invalid or expired refresh token');
             }
             // Generate new tokens
             const newSessionId = (0, uuid_1.v4)();
             const tokens = await generateTokens(session.user.id, newSessionId, session.user.email, session.user.role);
             // Delete old session and create new one
-            await database_js_1.prisma.$transaction([
-                database_js_1.prisma.session.delete({ where: { id: session.id } }),
-                database_js_1.prisma.session.create({
+            await database_1.prisma.$transaction([
+                database_1.prisma.session.delete({ where: { id: session.id } }),
+                database_1.prisma.session.create({
                     data: {
                         id: newSessionId,
                         userId: session.user.id,
@@ -241,7 +241,7 @@ exports.authService = {
         }
         catch (error) {
             if (error instanceof jsonwebtoken_1.default.JsonWebTokenError) {
-                throw new errors_js_1.UnauthorizedError('Invalid refresh token');
+                throw new errors_1.UnauthorizedError('Invalid refresh token');
             }
             throw error;
         }
@@ -250,7 +250,7 @@ exports.authService = {
      * Request password reset
      */
     async requestPasswordReset(email) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { email: email.toLowerCase(), deletedAt: null },
         });
         if (!user) {
@@ -258,13 +258,13 @@ exports.authService = {
             return;
         }
         // Invalidate existing reset tokens
-        await database_js_1.prisma.passwordReset.updateMany({
+        await database_1.prisma.passwordReset.updateMany({
             where: { userId: user.id, used: false },
             data: { used: true },
         });
         // Create new reset token
         const token = (0, uuid_1.v4)();
-        await database_js_1.prisma.passwordReset.create({
+        await database_1.prisma.passwordReset.create({
             data: {
                 userId: user.id,
                 token,
@@ -272,13 +272,13 @@ exports.authService = {
             },
         });
         // Send reset email
-        await email_service_js_1.emailService.sendPasswordResetEmail(user.email, user.name, token);
+        await email_service_1.emailService.sendPasswordResetEmail(user.email, user.name, token);
     },
     /**
      * Reset password with token
      */
     async resetPassword(token, password) {
-        const resetRecord = await database_js_1.prisma.passwordReset.findFirst({
+        const resetRecord = await database_1.prisma.passwordReset.findFirst({
             where: {
                 token,
                 used: false,
@@ -287,20 +287,20 @@ exports.authService = {
             include: { user: true },
         });
         if (!resetRecord) {
-            throw new errors_js_1.BadRequestError('Invalid or expired reset token');
+            throw new errors_1.BadRequestError('Invalid or expired reset token');
         }
         const hashedPassword = await bcryptjs_1.default.hash(password, SALT_ROUNDS);
-        await database_js_1.prisma.$transaction([
-            database_js_1.prisma.user.update({
+        await database_1.prisma.$transaction([
+            database_1.prisma.user.update({
                 where: { id: resetRecord.userId },
                 data: { password: hashedPassword },
             }),
-            database_js_1.prisma.passwordReset.update({
+            database_1.prisma.passwordReset.update({
                 where: { id: resetRecord.id },
                 data: { used: true },
             }),
             // Invalidate all sessions
-            database_js_1.prisma.session.deleteMany({
+            database_1.prisma.session.deleteMany({
                 where: { userId: resetRecord.userId },
             }),
         ]);
@@ -309,7 +309,7 @@ exports.authService = {
      * Verify email address
      */
     async verifyEmail(token) {
-        const verification = await database_js_1.prisma.emailVerification.findFirst({
+        const verification = await database_1.prisma.emailVerification.findFirst({
             where: {
                 token,
                 verified: false,
@@ -317,14 +317,14 @@ exports.authService = {
             },
         });
         if (!verification) {
-            throw new errors_js_1.BadRequestError('Invalid or expired verification token');
+            throw new errors_1.BadRequestError('Invalid or expired verification token');
         }
-        await database_js_1.prisma.$transaction([
-            database_js_1.prisma.user.update({
+        await database_1.prisma.$transaction([
+            database_1.prisma.user.update({
                 where: { id: verification.userId },
                 data: { emailVerified: true },
             }),
-            database_js_1.prisma.emailVerification.update({
+            database_1.prisma.emailVerification.update({
                 where: { id: verification.id },
                 data: { verified: true },
             }),
@@ -334,7 +334,7 @@ exports.authService = {
      * Resend verification email (by email address)
      */
     async resendVerificationEmail(email) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { email: email.toLowerCase(), deletedAt: null },
         });
         if (!user) {
@@ -346,39 +346,39 @@ exports.authService = {
             return;
         }
         // Invalidate existing tokens
-        await database_js_1.prisma.emailVerification.updateMany({
+        await database_1.prisma.emailVerification.updateMany({
             where: { userId: user.id, verified: false },
             data: { verified: true },
         });
         // Create new token
         const token = (0, uuid_1.v4)();
-        await database_js_1.prisma.emailVerification.create({
+        await database_1.prisma.emailVerification.create({
             data: {
                 userId: user.id,
                 token,
                 expiresAt: new Date(Date.now() + 24 * 60 * 60 * 1000), // 24 hours
             },
         });
-        await email_service_js_1.emailService.sendVerificationEmail(user.email, user.name, token);
+        await email_service_1.emailService.sendVerificationEmail(user.email, user.name, token);
     },
     /**
      * Enable two-factor authentication (generates QR code)
      */
     async enableTwoFactor(userId) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { id: userId },
         });
         if (!user) {
-            throw new errors_js_1.NotFoundError('User not found');
+            throw new errors_1.NotFoundError('User not found');
         }
         if (user.twoFactorEnabled) {
-            throw new errors_js_1.BadRequestError('2FA is already enabled');
+            throw new errors_1.BadRequestError('2FA is already enabled');
         }
         const secret = otplib_1.authenticator.generateSecret();
         const otpauth = otplib_1.authenticator.keyuri(user.email, 'MacroFlow', secret);
         const qrCode = await qrcode_1.default.toDataURL(otpauth);
         // Store secret temporarily (will be confirmed on verify)
-        await database_js_1.prisma.user.update({
+        await database_1.prisma.user.update({
             where: { id: userId },
             data: { twoFactorSecret: secret },
         });
@@ -389,22 +389,22 @@ exports.authService = {
      * Returns backup codes on successful activation
      */
     async verifyAndActivateTwoFactor(userId, code) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { id: userId },
         });
         if (!user || !user.twoFactorSecret) {
-            throw new errors_js_1.BadRequestError('2FA setup not initiated');
+            throw new errors_1.BadRequestError('2FA setup not initiated');
         }
         const isValid = otplib_1.authenticator.verify({
             token: code,
             secret: user.twoFactorSecret,
         });
         if (!isValid) {
-            throw new errors_js_1.BadRequestError('Invalid verification code');
+            throw new errors_1.BadRequestError('Invalid verification code');
         }
         // Generate backup codes
         const backupCodes = generateBackupCodes();
-        await database_js_1.prisma.user.update({
+        await database_1.prisma.user.update({
             where: { id: userId },
             data: {
                 twoFactorEnabled: true,
@@ -417,23 +417,23 @@ exports.authService = {
      * Disable two-factor authentication
      */
     async disableTwoFactor(userId, code) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { id: userId },
         });
         if (!user) {
-            throw new errors_js_1.NotFoundError('User not found');
+            throw new errors_1.NotFoundError('User not found');
         }
         if (!user.twoFactorEnabled || !user.twoFactorSecret) {
-            throw new errors_js_1.BadRequestError('2FA is not enabled');
+            throw new errors_1.BadRequestError('2FA is not enabled');
         }
         const isValid = otplib_1.authenticator.verify({
             token: code,
             secret: user.twoFactorSecret,
         });
         if (!isValid) {
-            throw new errors_js_1.BadRequestError('Invalid verification code');
+            throw new errors_1.BadRequestError('Invalid verification code');
         }
-        await database_js_1.prisma.user.update({
+        await database_1.prisma.user.update({
             where: { id: userId },
             data: {
                 twoFactorEnabled: false,
@@ -446,7 +446,7 @@ exports.authService = {
      * Get all active sessions for a user
      */
     async getUserSessions(userId) {
-        const sessions = await database_js_1.prisma.session.findMany({
+        const sessions = await database_1.prisma.session.findMany({
             where: {
                 userId,
                 expiresAt: { gt: new Date() },
@@ -466,16 +466,16 @@ exports.authService = {
      * Revoke a specific session
      */
     async revokeSession(userId, sessionId) {
-        const session = await database_js_1.prisma.session.findFirst({
+        const session = await database_1.prisma.session.findFirst({
             where: {
                 id: sessionId,
                 userId,
             },
         });
         if (!session) {
-            throw new errors_js_1.NotFoundError('Session not found');
+            throw new errors_1.NotFoundError('Session not found');
         }
-        await database_js_1.prisma.session.delete({
+        await database_1.prisma.session.delete({
             where: { id: sessionId },
         });
     },
@@ -486,7 +486,7 @@ exports.authService = {
         let currentSessionId = null;
         if (currentRefreshToken) {
             try {
-                const payload = jsonwebtoken_1.default.verify(currentRefreshToken, index_js_1.config.jwt.refreshSecret);
+                const payload = jsonwebtoken_1.default.verify(currentRefreshToken, index_1.config.jwt.refreshSecret);
                 currentSessionId = payload.sessionId;
             }
             catch {
@@ -494,7 +494,7 @@ exports.authService = {
             }
         }
         if (currentSessionId) {
-            await database_js_1.prisma.session.deleteMany({
+            await database_1.prisma.session.deleteMany({
                 where: {
                     userId,
                     id: { not: currentSessionId },
@@ -502,7 +502,7 @@ exports.authService = {
             });
         }
         else {
-            await database_js_1.prisma.session.deleteMany({
+            await database_1.prisma.session.deleteMany({
                 where: { userId },
             });
         }
@@ -511,18 +511,18 @@ exports.authService = {
      * Change password (authenticated user)
      */
     async changePassword(userId, currentPassword, newPassword) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { id: userId },
         });
         if (!user) {
-            throw new errors_js_1.NotFoundError('User not found');
+            throw new errors_1.NotFoundError('User not found');
         }
         const isValidPassword = await bcryptjs_1.default.compare(currentPassword, user.password);
         if (!isValidPassword) {
-            throw new errors_js_1.BadRequestError('Current password is incorrect');
+            throw new errors_1.BadRequestError('Current password is incorrect');
         }
         const hashedPassword = await bcryptjs_1.default.hash(newPassword, SALT_ROUNDS);
-        await database_js_1.prisma.user.update({
+        await database_1.prisma.user.update({
             where: { id: userId },
             data: { password: hashedPassword },
         });
@@ -533,12 +533,12 @@ exports.authService = {
      * Get current user info
      */
     async getMe(userId) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { id: userId },
             include: { preferences: true },
         });
         if (!user) {
-            throw new errors_js_1.NotFoundError('User not found');
+            throw new errors_1.NotFoundError('User not found');
         }
         return {
             id: user.id,

@@ -2,9 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.workspaceService = void 0;
 const uuid_1 = require("uuid");
-const database_js_1 = require("../config/database.js");
-const errors_js_1 = require("../utils/errors.js");
-const upload_service_js_1 = require("./upload.service.js");
+const database_1 = require("../config/database");
+const errors_1 = require("../utils/errors");
+const upload_service_1 = require("./upload.service");
 // ===========================================
 // Helper: Generate slug
 // ===========================================
@@ -18,7 +18,7 @@ const ensureUniqueSlug = async (baseSlug, excludeId) => {
     let slug = baseSlug;
     let counter = 1;
     while (true) {
-        const existing = await database_js_1.prisma.workspace.findFirst({
+        const existing = await database_1.prisma.workspace.findFirst({
             where: {
                 slug,
                 ...(excludeId && { id: { not: excludeId } }),
@@ -39,7 +39,7 @@ exports.workspaceService = {
      */
     async createWorkspace(userId, data) {
         const slug = await ensureUniqueSlug(generateSlug(data.name));
-        const workspace = await database_js_1.prisma.workspace.create({
+        const workspace = await database_1.prisma.workspace.create({
             data: {
                 name: data.name,
                 slug,
@@ -78,7 +78,7 @@ exports.workspaceService = {
      */
     async getUserWorkspaces(userId, options) {
         const { cursor, limit = 20 } = options;
-        const memberships = await database_js_1.prisma.workspaceMember.findMany({
+        const memberships = await database_1.prisma.workspaceMember.findMany({
             where: {
                 userId,
                 workspace: { deletedAt: null },
@@ -120,7 +120,7 @@ exports.workspaceService = {
      * Get workspace by ID
      */
     async getWorkspaceById(workspaceId) {
-        const workspace = await database_js_1.prisma.workspace.findFirst({
+        const workspace = await database_1.prisma.workspace.findFirst({
             where: {
                 id: workspaceId,
                 deletedAt: null,
@@ -143,7 +143,7 @@ exports.workspaceService = {
             },
         });
         if (!workspace) {
-            throw new errors_js_1.NotFoundError('Workspace not found');
+            throw new errors_1.NotFoundError('Workspace not found');
         }
         return workspace;
     },
@@ -151,20 +151,20 @@ exports.workspaceService = {
      * Update workspace
      */
     async updateWorkspace(workspaceId, data) {
-        const workspace = await database_js_1.prisma.workspace.findFirst({
+        const workspace = await database_1.prisma.workspace.findFirst({
             where: {
                 id: workspaceId,
                 deletedAt: null,
             },
         });
         if (!workspace) {
-            throw new errors_js_1.NotFoundError('Workspace not found');
+            throw new errors_1.NotFoundError('Workspace not found');
         }
         let slug = workspace.slug;
         if (data.name && data.name !== workspace.name) {
             slug = await ensureUniqueSlug(generateSlug(data.name), workspaceId);
         }
-        const updated = await database_js_1.prisma.workspace.update({
+        const updated = await database_1.prisma.workspace.update({
             where: { id: workspaceId },
             data: {
                 ...data,
@@ -185,16 +185,16 @@ exports.workspaceService = {
      * Delete workspace (soft delete)
      */
     async deleteWorkspace(workspaceId) {
-        const workspace = await database_js_1.prisma.workspace.findFirst({
+        const workspace = await database_1.prisma.workspace.findFirst({
             where: {
                 id: workspaceId,
                 deletedAt: null,
             },
         });
         if (!workspace) {
-            throw new errors_js_1.NotFoundError('Workspace not found');
+            throw new errors_1.NotFoundError('Workspace not found');
         }
-        await database_js_1.prisma.workspace.update({
+        await database_1.prisma.workspace.update({
             where: { id: workspaceId },
             data: { deletedAt: new Date() },
         });
@@ -211,7 +211,7 @@ exports.workspaceService = {
                 joinedAt: { lt: new Date(cursor) },
             }),
         };
-        const members = await database_js_1.prisma.workspaceMember.findMany({
+        const members = await database_1.prisma.workspaceMember.findMany({
             where,
             take: limit + 1,
             orderBy: { joinedAt: 'desc' },
@@ -246,28 +246,28 @@ exports.workspaceService = {
      * Add member to workspace
      */
     async addMember(workspaceId, data) {
-        const workspace = await database_js_1.prisma.workspace.findUnique({
+        const workspace = await database_1.prisma.workspace.findUnique({
             where: { id: workspaceId },
         });
         if (!workspace) {
-            throw new errors_js_1.NotFoundError('Workspace not found');
+            throw new errors_1.NotFoundError('Workspace not found');
         }
         let userId = data.userId;
         // If email provided, find user
         if (!userId && data.email) {
-            const user = await database_js_1.prisma.user.findUnique({
+            const user = await database_1.prisma.user.findUnique({
                 where: { email: data.email.toLowerCase() },
             });
             if (!user) {
-                throw new errors_js_1.NotFoundError('User with this email not found');
+                throw new errors_1.NotFoundError('User with this email not found');
             }
             userId = user.id;
         }
         if (!userId) {
-            throw new errors_js_1.BadRequestError('Either userId or email is required');
+            throw new errors_1.BadRequestError('Either userId or email is required');
         }
         // Check if already a member
-        const existingMember = await database_js_1.prisma.workspaceMember.findUnique({
+        const existingMember = await database_1.prisma.workspaceMember.findUnique({
             where: {
                 workspaceId_userId: {
                     workspaceId,
@@ -276,9 +276,9 @@ exports.workspaceService = {
             },
         });
         if (existingMember) {
-            throw new errors_js_1.ConflictError('User is already a member of this workspace');
+            throw new errors_1.ConflictError('User is already a member of this workspace');
         }
-        const member = await database_js_1.prisma.workspaceMember.create({
+        const member = await database_1.prisma.workspaceMember.create({
             data: {
                 workspaceId,
                 userId,
@@ -306,21 +306,21 @@ exports.workspaceService = {
      * Update member role
      */
     async updateMemberRole(workspaceId, userId, role) {
-        const workspace = await database_js_1.prisma.workspace.findUnique({
+        const workspace = await database_1.prisma.workspace.findUnique({
             where: { id: workspaceId },
         });
         if (!workspace) {
-            throw new errors_js_1.NotFoundError('Workspace not found');
+            throw new errors_1.NotFoundError('Workspace not found');
         }
         // Can't change owner role
         if (workspace.ownerId === userId) {
-            throw new errors_js_1.ForbiddenError('Cannot change owner role');
+            throw new errors_1.ForbiddenError('Cannot change owner role');
         }
         // Can't make someone else the owner
         if (role === 'owner') {
-            throw new errors_js_1.ForbiddenError('Cannot assign owner role directly. Use transfer ownership.');
+            throw new errors_1.ForbiddenError('Cannot assign owner role directly. Use transfer ownership.');
         }
-        const member = await database_js_1.prisma.workspaceMember.findUnique({
+        const member = await database_1.prisma.workspaceMember.findUnique({
             where: {
                 workspaceId_userId: {
                     workspaceId,
@@ -329,9 +329,9 @@ exports.workspaceService = {
             },
         });
         if (!member) {
-            throw new errors_js_1.NotFoundError('Member not found');
+            throw new errors_1.NotFoundError('Member not found');
         }
-        const updated = await database_js_1.prisma.workspaceMember.update({
+        const updated = await database_1.prisma.workspaceMember.update({
             where: { id: member.id },
             data: { role: role },
             include: {
@@ -356,17 +356,17 @@ exports.workspaceService = {
      * Remove member from workspace
      */
     async removeMember(workspaceId, userId) {
-        const workspace = await database_js_1.prisma.workspace.findUnique({
+        const workspace = await database_1.prisma.workspace.findUnique({
             where: { id: workspaceId },
         });
         if (!workspace) {
-            throw new errors_js_1.NotFoundError('Workspace not found');
+            throw new errors_1.NotFoundError('Workspace not found');
         }
         // Owner can't be removed
         if (workspace.ownerId === userId) {
-            throw new errors_js_1.ForbiddenError('Cannot remove workspace owner');
+            throw new errors_1.ForbiddenError('Cannot remove workspace owner');
         }
-        const member = await database_js_1.prisma.workspaceMember.findUnique({
+        const member = await database_1.prisma.workspaceMember.findUnique({
             where: {
                 workspaceId_userId: {
                     workspaceId,
@@ -375,9 +375,9 @@ exports.workspaceService = {
             },
         });
         if (!member) {
-            throw new errors_js_1.NotFoundError('Member not found');
+            throw new errors_1.NotFoundError('Member not found');
         }
-        await database_js_1.prisma.workspaceMember.delete({
+        await database_1.prisma.workspaceMember.delete({
             where: { id: member.id },
         });
     },
@@ -385,17 +385,17 @@ exports.workspaceService = {
      * Leave workspace
      */
     async leaveWorkspace(workspaceId, userId) {
-        const workspace = await database_js_1.prisma.workspace.findUnique({
+        const workspace = await database_1.prisma.workspace.findUnique({
             where: { id: workspaceId },
         });
         if (!workspace) {
-            throw new errors_js_1.NotFoundError('Workspace not found');
+            throw new errors_1.NotFoundError('Workspace not found');
         }
         // Owner can't leave
         if (workspace.ownerId === userId) {
-            throw new errors_js_1.ForbiddenError('Owner cannot leave workspace. Transfer ownership or delete the workspace.');
+            throw new errors_1.ForbiddenError('Owner cannot leave workspace. Transfer ownership or delete the workspace.');
         }
-        const member = await database_js_1.prisma.workspaceMember.findUnique({
+        const member = await database_1.prisma.workspaceMember.findUnique({
             where: {
                 workspaceId_userId: {
                     workspaceId,
@@ -404,9 +404,9 @@ exports.workspaceService = {
             },
         });
         if (!member) {
-            throw new errors_js_1.NotFoundError('You are not a member of this workspace');
+            throw new errors_1.NotFoundError('You are not a member of this workspace');
         }
-        await database_js_1.prisma.workspaceMember.delete({
+        await database_1.prisma.workspaceMember.delete({
             where: { id: member.id },
         });
     },
@@ -414,7 +414,7 @@ exports.workspaceService = {
      * Transfer workspace ownership
      */
     async transferOwnership(workspaceId, currentOwnerId, newOwnerId) {
-        const workspace = await database_js_1.prisma.workspace.findFirst({
+        const workspace = await database_1.prisma.workspace.findFirst({
             where: {
                 id: workspaceId,
                 ownerId: currentOwnerId,
@@ -422,10 +422,10 @@ exports.workspaceService = {
             },
         });
         if (!workspace) {
-            throw new errors_js_1.NotFoundError('Workspace not found or you are not the owner');
+            throw new errors_1.NotFoundError('Workspace not found or you are not the owner');
         }
         // Check if new owner is a member
-        const newOwnerMember = await database_js_1.prisma.workspaceMember.findUnique({
+        const newOwnerMember = await database_1.prisma.workspaceMember.findUnique({
             where: {
                 workspaceId_userId: {
                     workspaceId,
@@ -434,19 +434,19 @@ exports.workspaceService = {
             },
         });
         if (!newOwnerMember) {
-            throw new errors_js_1.BadRequestError('New owner must be a member of the workspace');
+            throw new errors_1.BadRequestError('New owner must be a member of the workspace');
         }
         // Update workspace owner and member roles
-        await database_js_1.prisma.$transaction([
-            database_js_1.prisma.workspace.update({
+        await database_1.prisma.$transaction([
+            database_1.prisma.workspace.update({
                 where: { id: workspaceId },
                 data: { ownerId: newOwnerId },
             }),
-            database_js_1.prisma.workspaceMember.update({
+            database_1.prisma.workspaceMember.update({
                 where: { id: newOwnerMember.id },
                 data: { role: 'owner' },
             }),
-            database_js_1.prisma.workspaceMember.updateMany({
+            database_1.prisma.workspaceMember.updateMany({
                 where: {
                     workspaceId,
                     userId: currentOwnerId,
@@ -460,11 +460,11 @@ exports.workspaceService = {
      * Create invite link
      */
     async createInviteLink(workspaceId, options) {
-        const workspace = await database_js_1.prisma.workspace.findUnique({
+        const workspace = await database_1.prisma.workspace.findUnique({
             where: { id: workspaceId },
         });
         if (!workspace) {
-            throw new errors_js_1.NotFoundError('Workspace not found');
+            throw new errors_1.NotFoundError('Workspace not found');
         }
         const inviteCode = (0, uuid_1.v4)();
         const expiresAt = new Date(Date.now() + (options.expiresIn || 7 * 24 * 60 * 60 * 1000)); // Default 7 days
@@ -486,7 +486,7 @@ exports.workspaceService = {
         // In a real implementation, you'd look up the invite code in a database table
         // For now, we'll assume invite codes are valid and decode the workspace ID from them
         // This is a simplified implementation
-        throw new errors_js_1.BadRequestError('Invite system requires additional setup. Please have an admin add you directly.');
+        throw new errors_1.BadRequestError('Invite system requires additional setup. Please have an admin add you directly.');
     },
     /**
      * Get workspace projects
@@ -501,7 +501,7 @@ exports.workspaceService = {
                 createdAt: { lt: new Date(cursor) },
             }),
         };
-        const projects = await database_js_1.prisma.project.findMany({
+        const projects = await database_1.prisma.project.findMany({
             where,
             take: limit + 1,
             orderBy: { createdAt: 'desc' },
@@ -544,7 +544,7 @@ exports.workspaceService = {
                 createdAt: { lt: new Date(cursor) },
             }),
         };
-        const activities = await database_js_1.prisma.activity.findMany({
+        const activities = await database_1.prisma.activity.findMany({
             where,
             take: limit + 1,
             orderBy: { createdAt: 'desc' },
@@ -585,7 +585,7 @@ exports.workspaceService = {
      * Get workspace settings
      */
     async getWorkspaceSettings(workspaceId) {
-        const workspace = await database_js_1.prisma.workspace.findFirst({
+        const workspace = await database_1.prisma.workspace.findFirst({
             where: {
                 id: workspaceId,
                 deletedAt: null,
@@ -602,7 +602,7 @@ exports.workspaceService = {
             },
         });
         if (!workspace) {
-            throw new errors_js_1.NotFoundError('Workspace not found');
+            throw new errors_1.NotFoundError('Workspace not found');
         }
         return workspace;
     },
@@ -610,16 +610,16 @@ exports.workspaceService = {
      * Update workspace settings
      */
     async updateWorkspaceSettings(workspaceId, data) {
-        const workspace = await database_js_1.prisma.workspace.findFirst({
+        const workspace = await database_1.prisma.workspace.findFirst({
             where: {
                 id: workspaceId,
                 deletedAt: null,
             },
         });
         if (!workspace) {
-            throw new errors_js_1.NotFoundError('Workspace not found');
+            throw new errors_1.NotFoundError('Workspace not found');
         }
-        const updated = await database_js_1.prisma.workspace.update({
+        const updated = await database_1.prisma.workspace.update({
             where: { id: workspaceId },
             data,
             select: {
@@ -639,22 +639,22 @@ exports.workspaceService = {
      * Update workspace logo
      */
     async updateWorkspaceLogo(workspaceId, file) {
-        const workspace = await database_js_1.prisma.workspace.findFirst({
+        const workspace = await database_1.prisma.workspace.findFirst({
             where: {
                 id: workspaceId,
                 deletedAt: null,
             },
         });
         if (!workspace) {
-            throw new errors_js_1.NotFoundError('Workspace not found');
+            throw new errors_1.NotFoundError('Workspace not found');
         }
         // Delete old icon if exists
         if (workspace.icon) {
-            await upload_service_js_1.uploadService.deleteFile(workspace.icon).catch(() => { });
+            await upload_service_1.uploadService.deleteFile(workspace.icon).catch(() => { });
         }
         // Upload new logo
-        const result = await upload_service_js_1.uploadService.uploadFile(file, 'workspace-logos');
-        await database_js_1.prisma.workspace.update({
+        const result = await upload_service_1.uploadService.uploadFile(file, 'workspace-logos');
+        await database_1.prisma.workspace.update({
             where: { id: workspaceId },
             data: { icon: result.url },
         });
@@ -664,19 +664,19 @@ exports.workspaceService = {
      * Get workspace statistics
      */
     async getWorkspaceStats(workspaceId) {
-        const workspace = await database_js_1.prisma.workspace.findFirst({
+        const workspace = await database_1.prisma.workspace.findFirst({
             where: {
                 id: workspaceId,
                 deletedAt: null,
             },
         });
         if (!workspace) {
-            throw new errors_js_1.NotFoundError('Workspace not found');
+            throw new errors_1.NotFoundError('Workspace not found');
         }
         const [memberCount, projectCount, taskStats, recentActivity] = await Promise.all([
-            database_js_1.prisma.workspaceMember.count({ where: { workspaceId } }),
-            database_js_1.prisma.project.count({ where: { workspaceId, deletedAt: null } }),
-            database_js_1.prisma.task.groupBy({
+            database_1.prisma.workspaceMember.count({ where: { workspaceId } }),
+            database_1.prisma.project.count({ where: { workspaceId, deletedAt: null } }),
+            database_1.prisma.task.groupBy({
                 by: ['status'],
                 where: {
                     project: { workspaceId },
@@ -684,7 +684,7 @@ exports.workspaceService = {
                 },
                 _count: true,
             }),
-            database_js_1.prisma.activity.count({
+            database_1.prisma.activity.count({
                 where: {
                     workspaceId,
                     createdAt: { gte: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000) },

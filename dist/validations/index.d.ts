@@ -1,9 +1,9 @@
-export * from './auth.validation.js';
-export * from './user.validation.js';
-export * from './workspace.validation.js';
-export * from './project.validation.js';
-export * from './task.validation.js';
-export * from './column.validation.js';
-export * from './comment.validation.js';
-export * from './scenario.validation.js';
+export * from './auth.validation';
+export * from './user.validation';
+export * from './workspace.validation';
+export * from './project.validation';
+export * from './task.validation';
+export * from './column.validation';
+export * from './comment.validation';
+export * from './scenario.validation';
 //# sourceMappingURL=index.d.ts.map

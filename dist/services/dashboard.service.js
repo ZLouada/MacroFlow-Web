@@ -1,22 +1,22 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.dashboardService = void 0;
-const database_js_1 = require("../config/database.js");
-const errors_js_1 = require("../utils/errors.js");
+const database_1 = require("../config/database");
+const errors_1 = require("../utils/errors");
 exports.dashboardService = {
     // Get workspace dashboard
     async getWorkspaceDashboard(workspaceId) {
-        const workspace = await database_js_1.prisma.workspace.findUnique({
+        const workspace = await database_1.prisma.workspace.findUnique({
             where: { id: workspaceId },
         });
         if (!workspace) {
-            throw new errors_js_1.NotFoundError('Workspace not found');
+            throw new errors_1.NotFoundError('Workspace not found');
         }
         const [projects, tasks, members, recentActivity,] = await Promise.all([
-            database_js_1.prisma.project.count({
+            database_1.prisma.project.count({
                 where: { workspaceId, deletedAt: null },
             }),
-            database_js_1.prisma.task.groupBy({
+            database_1.prisma.task.groupBy({
                 by: ['status'],
                 where: {
                     project: { workspaceId },
@@ -24,10 +24,10 @@ exports.dashboardService = {
                 },
                 _count: { status: true },
             }),
-            database_js_1.prisma.workspaceMember.count({
+            database_1.prisma.workspaceMember.count({
                 where: { workspaceId },
             }),
-            database_js_1.prisma.activity.findMany({
+            database_1.prisma.activity.findMany({
                 where: { workspaceId },
                 orderBy: { createdAt: 'desc' },
                 take: 10,
@@ -65,27 +65,27 @@ exports.dashboardService = {
     },
     // Get project dashboard
     async getProjectDashboard(projectId) {
-        const project = await database_js_1.prisma.project.findUnique({
+        const project = await database_1.prisma.project.findUnique({
             where: { id: projectId },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
         const [tasks, columns, members, recentActivity, overdue,] = await Promise.all([
-            database_js_1.prisma.task.groupBy({
+            database_1.prisma.task.groupBy({
                 by: ['status'],
                 where: { projectId, deletedAt: null },
                 _count: { status: true },
             }),
-            database_js_1.prisma.kanbanColumn.findMany({
+            database_1.prisma.kanbanColumn.findMany({
                 where: { projectId },
                 orderBy: { order: 'asc' },
                 include: {
                     _count: { select: { tasks: true } },
                 },
             }),
-            database_js_1.prisma.projectMember.count({ where: { projectId } }),
-            database_js_1.prisma.activity.findMany({
+            database_1.prisma.projectMember.count({ where: { projectId } }),
+            database_1.prisma.activity.findMany({
                 where: { projectId },
                 orderBy: { createdAt: 'desc' },
                 take: 10,
@@ -94,7 +94,7 @@ exports.dashboardService = {
                     task: { select: { id: true, title: true } },
                 },
             }),
-            database_js_1.prisma.task.count({
+            database_1.prisma.task.count({
                 where: {
                     projectId,
                     deletedAt: null,
@@ -139,12 +139,12 @@ exports.dashboardService = {
     // Get personal dashboard
     async getPersonalDashboard(userId) {
         const [assignedTasks, overdueTasks, upcomingDeadlines, recentActivity, workspaces,] = await Promise.all([
-            database_js_1.prisma.task.groupBy({
+            database_1.prisma.task.groupBy({
                 by: ['status'],
                 where: { assigneeId: userId, deletedAt: null },
                 _count: { status: true },
             }),
-            database_js_1.prisma.task.findMany({
+            database_1.prisma.task.findMany({
                 where: {
                     assigneeId: userId,
                     deletedAt: null,
@@ -157,7 +157,7 @@ exports.dashboardService = {
                 },
                 orderBy: { dueDate: 'asc' },
             }),
-            database_js_1.prisma.task.findMany({
+            database_1.prisma.task.findMany({
                 where: {
                     assigneeId: userId,
                     deletedAt: null,
@@ -173,7 +173,7 @@ exports.dashboardService = {
                 },
                 orderBy: { dueDate: 'asc' },
             }),
-            database_js_1.prisma.activity.findMany({
+            database_1.prisma.activity.findMany({
                 where: { userId },
                 orderBy: { createdAt: 'desc' },
                 take: 10,
@@ -182,7 +182,7 @@ exports.dashboardService = {
                     task: { select: { id: true, title: true } },
                 },
             }),
-            database_js_1.prisma.workspaceMember.findMany({
+            database_1.prisma.workspaceMember.findMany({
                 where: { userId },
                 include: {
                     workspace: {
@@ -232,25 +232,25 @@ exports.dashboardService = {
                 where.createdAt.lte = new Date(endDate);
         }
         const [total, byStatus, byPriority, overdue, completed] = await Promise.all([
-            database_js_1.prisma.task.count({ where }),
-            database_js_1.prisma.task.groupBy({
+            database_1.prisma.task.count({ where }),
+            database_1.prisma.task.groupBy({
                 by: ['status'],
                 where,
                 _count: { status: true },
             }),
-            database_js_1.prisma.task.groupBy({
+            database_1.prisma.task.groupBy({
                 by: ['priority'],
                 where,
                 _count: { priority: true },
             }),
-            database_js_1.prisma.task.count({
+            database_1.prisma.task.count({
                 where: {
                     ...where,
                     dueDate: { lt: new Date() },
                     status: { notIn: ['done'] },
                 },
             }),
-            database_js_1.prisma.task.count({
+            database_1.prisma.task.count({
                 where: { ...where, status: 'done' },
             }),
         ]);
@@ -301,7 +301,7 @@ exports.dashboardService = {
             const periodEnd = new Date(periodStart);
             periodEnd.setDate(periodEnd.getDate() + periodDays);
             const [completed, points] = await Promise.all([
-                database_js_1.prisma.task.count({
+                database_1.prisma.task.count({
                     where: {
                         projectId,
                         status: 'done',
@@ -311,7 +311,7 @@ exports.dashboardService = {
                         },
                     },
                 }),
-                database_js_1.prisma.task.aggregate({
+                database_1.prisma.task.aggregate({
                     where: {
                         projectId,
                         status: 'done',
@@ -335,11 +335,11 @@ exports.dashboardService = {
     },
     // Get burndown chart
     async getBurndownChart(projectId, options = {}) {
-        const project = await database_js_1.prisma.project.findUnique({
+        const project = await database_1.prisma.project.findUnique({
             where: { id: projectId },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
         const startDate = options.startDate
             ? new Date(options.startDate)
@@ -347,7 +347,7 @@ exports.dashboardService = {
         const endDate = options.endDate
             ? new Date(options.endDate)
             : project.endDate || new Date(startDate.getTime() + 14 * 24 * 60 * 60 * 1000);
-        const totalTasks = await database_js_1.prisma.task.count({
+        const totalTasks = await database_1.prisma.task.count({
             where: { projectId, deletedAt: null },
         });
         const burndown = [];
@@ -356,7 +356,7 @@ exports.dashboardService = {
         for (let i = 0; i <= days; i++) {
             const date = new Date(startDate);
             date.setDate(date.getDate() + i);
-            const completedByDate = await database_js_1.prisma.task.count({
+            const completedByDate = await database_1.prisma.task.count({
                 where: {
                     projectId,
                     status: 'done',
@@ -374,7 +374,7 @@ exports.dashboardService = {
     // Get workload distribution
     async getWorkloadDistribution(workspaceId, options = {}) {
         const { projectId } = options;
-        const members = await database_js_1.prisma.workspaceMember.findMany({
+        const members = await database_1.prisma.workspaceMember.findMany({
             where: { workspaceId },
             include: {
                 user: {
@@ -393,8 +393,8 @@ exports.dashboardService = {
                 },
             };
             const [tasksCount, hours] = await Promise.all([
-                database_js_1.prisma.task.count({ where: taskWhere }),
-                database_js_1.prisma.task.aggregate({
+                database_1.prisma.task.count({ where: taskWhere }),
+                database_1.prisma.task.aggregate({
                     where: taskWhere,
                     _sum: {
                         estimatedHours: true,
@@ -418,7 +418,7 @@ exports.dashboardService = {
         const { projectId, days = 30 } = options;
         const startDate = new Date();
         startDate.setDate(startDate.getDate() - days);
-        const activities = await database_js_1.prisma.activity.findMany({
+        const activities = await database_1.prisma.activity.findMany({
             where: {
                 workspaceId,
                 ...(projectId && { projectId }),
@@ -460,7 +460,7 @@ exports.dashboardService = {
         if (cursor) {
             where.id = { lt: cursor };
         }
-        const tasks = await database_js_1.prisma.task.findMany({
+        const tasks = await database_1.prisma.task.findMany({
             where,
             take: limit + 1,
             orderBy: { dueDate: 'asc' },
@@ -501,7 +501,7 @@ exports.dashboardService = {
         if (cursor) {
             where.id = { lt: cursor };
         }
-        const tasks = await database_js_1.prisma.task.findMany({
+        const tasks = await database_1.prisma.task.findMany({
             where,
             take: limit + 1,
             orderBy: { dueDate: 'asc' },
@@ -542,14 +542,14 @@ exports.dashboardService = {
             const periodEnd = new Date(periodStart);
             periodEnd.setDate(periodEnd.getDate() + periodDays);
             const [total, completed] = await Promise.all([
-                database_js_1.prisma.task.count({
+                database_1.prisma.task.count({
                     where: {
                         projectId,
                         deletedAt: null,
                         createdAt: { lt: periodEnd },
                     },
                 }),
-                database_js_1.prisma.task.count({
+                database_1.prisma.task.count({
                     where: {
                         projectId,
                         status: 'done',
@@ -583,7 +583,7 @@ exports.dashboardService = {
             if (endDate)
                 where.updatedAt.lte = new Date(endDate);
         }
-        const completedTasks = await database_js_1.prisma.task.findMany({
+        const completedTasks = await database_1.prisma.task.findMany({
             where,
             select: {
                 id: true,
@@ -622,13 +622,13 @@ exports.dashboardService = {
     },
     // Get label stats
     async getLabelStats(projectId) {
-        const project = await database_js_1.prisma.project.findUnique({
+        const project = await database_1.prisma.project.findUnique({
             where: { id: projectId },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
-        const labels = await database_js_1.prisma.label.findMany({
+        const labels = await database_1.prisma.label.findMany({
             where: { workspaceId: project.workspaceId },
             include: {
                 tasks: {
@@ -702,7 +702,7 @@ exports.dashboardService = {
     },
     // Legacy methods for backwards compatibility
     async getMyTasks(userId, limit = 20) {
-        const tasks = await database_js_1.prisma.task.findMany({
+        const tasks = await database_1.prisma.task.findMany({
             where: {
                 assigneeId: userId,
                 deletedAt: null,
@@ -727,7 +727,7 @@ exports.dashboardService = {
         return this.getBurndownChart(projectId);
     },
     async getTeamWorkload(projectId) {
-        const project = await database_js_1.prisma.project.findUnique({
+        const project = await database_1.prisma.project.findUnique({
             where: { id: projectId },
         });
         if (!project)
@@ -735,7 +735,7 @@ exports.dashboardService = {
         return this.getWorkloadDistribution(project.workspaceId, { projectId });
     },
     async getRecentActivity(userId, workspaceId, limit = 50) {
-        const activities = await database_js_1.prisma.activity.findMany({
+        const activities = await database_1.prisma.activity.findMany({
             where: {
                 ...(workspaceId && { workspaceId }),
                 OR: [

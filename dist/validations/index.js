@@ -14,12 +14,12 @@ var __exportStar = (this && this.__exportStar) || function(m, exports) {
     for (var p in m) if (p !== "default" && !Object.prototype.hasOwnProperty.call(exports, p)) __createBinding(exports, m, p);
 };
 Object.defineProperty(exports, "__esModule", { value: true });
-__exportStar(require("./auth.validation.js"), exports);
-__exportStar(require("./user.validation.js"), exports);
-__exportStar(require("./workspace.validation.js"), exports);
-__exportStar(require("./project.validation.js"), exports);
-__exportStar(require("./task.validation.js"), exports);
-__exportStar(require("./column.validation.js"), exports);
-__exportStar(require("./comment.validation.js"), exports);
-__exportStar(require("./scenario.validation.js"), exports);
+__exportStar(require("./auth.validation"), exports);
+__exportStar(require("./user.validation"), exports);
+__exportStar(require("./workspace.validation"), exports);
+__exportStar(require("./project.validation"), exports);
+__exportStar(require("./task.validation"), exports);
+__exportStar(require("./column.validation"), exports);
+__exportStar(require("./comment.validation"), exports);
+__exportStar(require("./scenario.validation"), exports);
 //# sourceMappingURL=index.js.map

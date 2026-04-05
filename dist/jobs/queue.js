@@ -2,14 +2,28 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.getQueueHealth = exports.closeQueues = exports.addAnalyticsJob = exports.addSimulationJob = exports.addFileCleanupJob = exports.addActivityLogJob = exports.addNotificationJob = exports.addEmailJob = exports.createQueueEvents = exports.analyticsQueue = exports.simulationQueue = exports.fileCleanupQueue = exports.activityLogQueue = exports.notificationQueue = exports.emailQueue = exports.QUEUE_NAMES = exports.redisConnection = void 0;
 const bullmq_1 = require("bullmq");
-const index_js_1 = require("../config/index.js");
-const logger_js_1 = require("../utils/logger.js");
-// Redis connection options for BullMQ
-exports.redisConnection = {
-    host: new URL(index_js_1.config.redis.url).hostname || 'localhost',
-    port: parseInt(new URL(index_js_1.config.redis.url).port) || 6379,
-    password: index_js_1.config.redis.password,
+const index_1 = require("../config/index");
+const logger_1 = require("../utils/logger");
+// Parse Redis URL safely
+const parseRedisUrl = (url) => {
+    try {
+        const parsed = new URL(url);
+        return {
+            host: parsed.hostname || 'localhost',
+            port: parseInt(parsed.port) || 6379,
+            password: parsed.password || index_1.config.redis.password || undefined,
+        };
+    }
+    catch {
+        return {
+            host: 'localhost',
+            port: 6379,
+            password: index_1.config.redis.password || undefined,
+        };
+    }
 };
+// Redis connection options for BullMQ
+exports.redisConnection = parseRedisUrl(index_1.config.redis.url);
 // Queue names
 exports.QUEUE_NAMES = {
     EMAIL: 'email-queue',
@@ -96,13 +110,13 @@ exports.analyticsQueue = new bullmq_1.Queue(exports.QUEUE_NAMES.ANALYTICS, {
 const createQueueEvents = (queueName) => {
     const events = new bullmq_1.QueueEvents(queueName, { connection: exports.redisConnection });
     events.on('completed', ({ jobId }) => {
-        logger_js_1.logger.debug(`Job ${jobId} completed in ${queueName}`);
+        logger_1.logger.debug(`Job ${jobId} completed in ${queueName}`);
     });
     events.on('failed', ({ jobId, failedReason }) => {
-        logger_js_1.logger.error(`Job ${jobId} failed in ${queueName}`, { reason: failedReason });
+        logger_1.logger.error(`Job ${jobId} failed in ${queueName}`, { reason: failedReason });
     });
     events.on('stalled', ({ jobId }) => {
-        logger_js_1.logger.warn(`Job ${jobId} stalled in ${queueName}`);
+        logger_1.logger.warn(`Job ${jobId} stalled in ${queueName}`);
     });
     return events;
 };
@@ -134,7 +148,7 @@ const addAnalyticsJob = async (data) => {
 exports.addAnalyticsJob = addAnalyticsJob;
 // Graceful shutdown
 const closeQueues = async () => {
-    logger_js_1.logger.info('Closing job queues...');
+    logger_1.logger.info('Closing job queues...');
     await Promise.all([
         exports.emailQueue.close(),
         exports.notificationQueue.close(),
@@ -143,7 +157,7 @@ const closeQueues = async () => {
         exports.simulationQueue.close(),
         exports.analyticsQueue.close(),
     ]);
-    logger_js_1.logger.info('All queues closed');
+    logger_1.logger.info('All queues closed');
 };
 exports.closeQueues = closeQueues;
 // Health check for queues

@@ -5,19 +5,19 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.emailService = void 0;
 const nodemailer_1 = __importDefault(require("nodemailer"));
-const index_js_1 = require("../config/index.js");
-const logger_js_1 = require("../utils/logger.js");
+const index_1 = require("../config/index");
+const logger_1 = require("../utils/logger");
 // ===========================================
 // Email Transporter
 // ===========================================
 const transporter = nodemailer_1.default.createTransport({
-    host: index_js_1.config.smtp.host,
-    port: index_js_1.config.smtp.port,
-    secure: index_js_1.config.smtp.port === 465,
-    auth: index_js_1.config.smtp.user && index_js_1.config.smtp.pass
+    host: index_1.config.smtp.host,
+    port: index_1.config.smtp.port,
+    secure: index_1.config.smtp.port === 465,
+    auth: index_1.config.smtp.user && index_1.config.smtp.pass
         ? {
-            user: index_js_1.config.smtp.user,
-            pass: index_js_1.config.smtp.pass,
+            user: index_1.config.smtp.user,
+            pass: index_1.config.smtp.pass,
         }
         : undefined,
 });
@@ -177,82 +177,82 @@ const templates = {
 // ===========================================
 exports.emailService = {
     async sendVerificationEmail(email, name, token) {
-        const link = `${index_js_1.config.frontend.url}/verify-email?token=${token}`;
+        const link = `${index_1.config.frontend.url}/verify-email?token=${token}`;
         const template = templates.verification(name, link);
         try {
             await transporter.sendMail({
-                from: index_js_1.config.smtp.from,
+                from: index_1.config.smtp.from,
                 to: email,
                 subject: template.subject,
                 html: template.html,
             });
-            logger_js_1.logger.info(`Verification email sent to ${email}`);
+            logger_1.logger.info(`Verification email sent to ${email}`);
         }
         catch (error) {
-            logger_js_1.logger.error('Failed to send verification email:', error);
+            logger_1.logger.error('Failed to send verification email:', error);
             // Don't throw - email sending should not block registration
         }
     },
     async sendPasswordResetEmail(email, name, token) {
-        const link = `${index_js_1.config.frontend.url}/reset-password?token=${token}`;
+        const link = `${index_1.config.frontend.url}/reset-password?token=${token}`;
         const template = templates.passwordReset(name, link);
         try {
             await transporter.sendMail({
-                from: index_js_1.config.smtp.from,
+                from: index_1.config.smtp.from,
                 to: email,
                 subject: template.subject,
                 html: template.html,
             });
-            logger_js_1.logger.info(`Password reset email sent to ${email}`);
+            logger_1.logger.info(`Password reset email sent to ${email}`);
         }
         catch (error) {
-            logger_js_1.logger.error('Failed to send password reset email:', error);
+            logger_1.logger.error('Failed to send password reset email:', error);
         }
     },
     async sendWorkspaceInviteEmail(email, inviterName, workspaceName, workspaceId) {
-        const link = `${index_js_1.config.frontend.url}/workspaces/${workspaceId}/join`;
+        const link = `${index_1.config.frontend.url}/workspaces/${workspaceId}/join`;
         const template = templates.workspaceInvite(inviterName, workspaceName, link);
         try {
             await transporter.sendMail({
-                from: index_js_1.config.smtp.from,
+                from: index_1.config.smtp.from,
                 to: email,
                 subject: template.subject,
                 html: template.html,
             });
-            logger_js_1.logger.info(`Workspace invite email sent to ${email}`);
+            logger_1.logger.info(`Workspace invite email sent to ${email}`);
         }
         catch (error) {
-            logger_js_1.logger.error('Failed to send workspace invite email:', error);
+            logger_1.logger.error('Failed to send workspace invite email:', error);
         }
     },
     async sendTaskAssignedEmail(email, assignerName, taskTitle, projectName, taskId) {
-        const link = `${index_js_1.config.frontend.url}/tasks/${taskId}`;
+        const link = `${index_1.config.frontend.url}/tasks/${taskId}`;
         const template = templates.taskAssigned(assignerName, taskTitle, projectName, link);
         try {
             await transporter.sendMail({
-                from: index_js_1.config.smtp.from,
+                from: index_1.config.smtp.from,
                 to: email,
                 subject: template.subject,
                 html: template.html,
             });
-            logger_js_1.logger.info(`Task assigned email sent to ${email}`);
+            logger_1.logger.info(`Task assigned email sent to ${email}`);
         }
         catch (error) {
-            logger_js_1.logger.error('Failed to send task assigned email:', error);
+            logger_1.logger.error('Failed to send task assigned email:', error);
         }
     },
     async sendCustomEmail(email, subject, html) {
         try {
             await transporter.sendMail({
-                from: index_js_1.config.smtp.from,
+                from: index_1.config.smtp.from,
                 to: email,
                 subject,
                 html,
             });
-            logger_js_1.logger.info(`Custom email sent to ${email}`);
+            logger_1.logger.info(`Custom email sent to ${email}`);
         }
         catch (error) {
-            logger_js_1.logger.error('Failed to send custom email:', error);
+            logger_1.logger.error('Failed to send custom email:', error);
             throw error;
         }
     },
