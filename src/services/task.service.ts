@@ -1,9 +1,9 @@
-import { prisma } from '../config/database.js';
+import { prisma } from '../config/database';
 import { Prisma, TaskStatus, TaskPriority, DependencyType } from '@prisma/client';
-import { NotFoundError, BadRequestError } from '../utils/errors.js';
-import { activityService } from './activity.service.js';
-import { notificationService } from './notification.service.js';
-import { uploadService } from './upload.service.js';
+import { NotFoundError, BadRequestError } from '../utils/errors';
+import { activityService } from './activity.service';
+import { notificationService } from './notification.service';
+import { uploadService } from './upload.service';
 
 // ===========================================
 // Task Service

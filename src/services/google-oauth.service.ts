@@ -6,10 +6,10 @@
 
 import { v4 as uuidv4 } from 'uuid';
 import jwt from 'jsonwebtoken';
-import { prisma } from '../config/database.js';
-import { config } from '../config/index.js';
-import { BadRequestError } from '../utils/errors.js';
-import { TokenPayload, RefreshTokenPayload, AuthenticatedUser, UserRole } from '../types/index.js';
+import { prisma } from '../config/database';
+import { config } from '../config/index';
+import { BadRequestError } from '../utils/errors';
+import { TokenPayload, RefreshTokenPayload, AuthenticatedUser, UserRole } from '../types/index';
 
 const ACCESS_TOKEN_EXPIRES = '15m';
 const REFRESH_TOKEN_EXPIRES = '7d';

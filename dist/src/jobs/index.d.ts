@@ -1,3 +1,3 @@
-export * from './queue.js';
-export * from './workers.js';
+export * from './queue';
+export * from './workers';
 //# sourceMappingURL=index.d.ts.map

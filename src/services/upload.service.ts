@@ -9,9 +9,9 @@ import {
 import { getSignedUrl } from '@aws-sdk/s3-request-presigner';
 import { v4 as uuidv4 } from 'uuid';
 import path from 'path';
-import { config } from '../config/index.js';
-import { BadRequestError, NotFoundError, InternalServerError } from '../utils/errors.js';
-import { logger } from '../utils/logger.js';
+import { config } from '../config/index';
+import { BadRequestError, NotFoundError, InternalServerError } from '../utils/errors';
+import { logger } from '../utils/logger';
 
 // S3 client configuration
 const s3Client = new S3Client({

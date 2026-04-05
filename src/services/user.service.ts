@@ -1,9 +1,9 @@
 import bcrypt from 'bcryptjs';
 import { Prisma, TaskStatus, TaskPriority } from '@prisma/client';
-import { prisma } from '../config/database.js';
-import { NotFoundError, BadRequestError, ForbiddenError } from '../utils/errors.js';
-import { UserRole } from '../types/index.js';
-import { uploadService } from './upload.service.js';
+import { prisma } from '../config/database';
+import { NotFoundError, BadRequestError, ForbiddenError } from '../utils/errors';
+import { UserRole } from '../types/index';
+import { uploadService } from './upload.service';
 
 // ===========================================
 // Types

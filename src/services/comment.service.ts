@@ -1,8 +1,8 @@
-import { prisma } from '../config/database.js';
+import { prisma } from '../config/database';
 import { Prisma } from '@prisma/client';
-import { NotFoundError, ForbiddenError } from '../utils/errors.js';
-import { activityService } from './activity.service.js';
-import { notificationService } from './notification.service.js';
+import { NotFoundError, ForbiddenError } from '../utils/errors';
+import { activityService } from './activity.service';
+import { notificationService } from './notification.service';
 
 // ===========================================
 // Comment Service

@@ -1,13 +1,13 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { commentController } from '../controllers/comment.controller.js';
-import { validate, asyncHandler } from '../middleware/error.middleware.js';
-import { authenticate } from '../middleware/auth.middleware.js';
-import { uploadRateLimiter } from '../middleware/rateLimit.middleware.js';
+import { commentController } from '../controllers/comment.controller';
+import { validate, asyncHandler } from '../middleware/error.middleware';
+import { authenticate } from '../middleware/auth.middleware';
+import { uploadRateLimiter } from '../middleware/rateLimit.middleware';
 import {
   createCommentSchema,
   updateCommentSchema,
-} from '../validations/comment.validation.js';
+} from '../validations/comment.validation';
 
 const router = Router();
 

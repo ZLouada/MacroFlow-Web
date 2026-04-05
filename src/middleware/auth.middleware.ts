@@ -1,9 +1,9 @@
 import { Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
-import { prisma } from '../config/database.js';
-import { config } from '../config/index.js';
-import { UnauthorizedError, ForbiddenError } from '../utils/errors.js';
-import { AuthenticatedRequest, TokenPayload, UserRole, WorkspaceRole, ProjectRole } from '../types/index.js';
+import { prisma } from '../config/database';
+import { config } from '../config/index';
+import { UnauthorizedError, ForbiddenError } from '../utils/errors';
+import { AuthenticatedRequest, TokenPayload, UserRole, WorkspaceRole, ProjectRole } from '../types/index';
 
 // ===========================================
 // JWT Authentication Middleware

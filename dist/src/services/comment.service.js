@@ -1,19 +1,19 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.commentService = void 0;
-const database_js_1 = require("../config/database.js");
-const errors_js_1 = require("../utils/errors.js");
-const activity_service_js_1 = require("./activity.service.js");
-const notification_service_js_1 = require("./notification.service.js");
+const database_1 = require("../config/database");
+const errors_1 = require("../utils/errors");
+const activity_service_1 = require("./activity.service");
+const notification_service_1 = require("./notification.service");
 exports.commentService = {
     // Get comments by task
     async getCommentsByTask(taskId, options = {}) {
         const { cursor, limit = 20 } = options;
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
         const where = {
             taskId,
@@ -22,7 +22,7 @@ exports.commentService = {
         if (cursor) {
             where.id = { lt: cursor };
         }
-        const comments = await database_js_1.prisma.comment.findMany({
+        const comments = await database_1.prisma.comment.findMany({
             where,
             take: limit + 1,
             orderBy: { createdAt: 'desc' },
@@ -53,7 +53,7 @@ exports.commentService = {
     },
     // Get comment by ID
     async getCommentById(commentId) {
-        const comment = await database_js_1.prisma.comment.findFirst({
+        const comment = await database_1.prisma.comment.findFirst({
             where: { id: commentId, deletedAt: null },
             include: {
                 author: {
@@ -76,20 +76,20 @@ exports.commentService = {
             },
         });
         if (!comment) {
-            throw new errors_js_1.NotFoundError('Comment not found');
+            throw new errors_1.NotFoundError('Comment not found');
         }
         return comment;
     },
     // Create comment
     async createComment(taskId, userId, data) {
-        const task = await database_js_1.prisma.task.findFirst({
+        const task = await database_1.prisma.task.findFirst({
             where: { id: taskId, deletedAt: null },
             include: { project: true },
         });
         if (!task) {
-            throw new errors_js_1.NotFoundError('Task not found');
+            throw new errors_1.NotFoundError('Task not found');
         }
-        const comment = await database_js_1.prisma.comment.create({
+        const comment = await database_1.prisma.comment.create({
             data: {
                 taskId,
                 authorId: userId,
@@ -102,7 +102,7 @@ exports.commentService = {
                 reactions: true,
             },
         });
-        await activity_service_js_1.activityService.log({
+        await activity_service_1.activityService.log({
             workspaceId: task.project.workspaceId,
             projectId: task.projectId,
             taskId,
@@ -112,30 +112,30 @@ exports.commentService = {
             entityId: comment.id,
         });
         // Notify
-        await notification_service_js_1.notificationService.notifyCommentAdded(taskId, userId);
+        await notification_service_1.notificationService.notifyCommentAdded(taskId, userId);
         // Parse mentions
         const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
         let match;
         while ((match = mentionRegex.exec(data.content)) !== null) {
             const mentionedUserId = match[2];
             if (mentionedUserId !== userId) {
-                await notification_service_js_1.notificationService.notifyMention(mentionedUserId, userId, taskId, comment.id);
+                await notification_service_1.notificationService.notifyMention(mentionedUserId, userId, taskId, comment.id);
             }
         }
         return comment;
     },
     // Update comment
     async updateComment(commentId, userId, content) {
-        const comment = await database_js_1.prisma.comment.findFirst({
+        const comment = await database_1.prisma.comment.findFirst({
             where: { id: commentId, deletedAt: null },
         });
         if (!comment) {
-            throw new errors_js_1.NotFoundError('Comment not found');
+            throw new errors_1.NotFoundError('Comment not found');
         }
         if (comment.authorId !== userId) {
-            throw new errors_js_1.ForbiddenError('You can only edit your own comments');
+            throw new errors_1.ForbiddenError('You can only edit your own comments');
         }
-        const updated = await database_js_1.prisma.comment.update({
+        const updated = await database_1.prisma.comment.update({
             where: { id: commentId },
             data: { content },
             include: {
@@ -149,16 +149,16 @@ exports.commentService = {
     },
     // Delete comment
     async deleteComment(commentId, userId) {
-        const comment = await database_js_1.prisma.comment.findFirst({
+        const comment = await database_1.prisma.comment.findFirst({
             where: { id: commentId, deletedAt: null },
         });
         if (!comment) {
-            throw new errors_js_1.NotFoundError('Comment not found');
+            throw new errors_1.NotFoundError('Comment not found');
         }
         if (comment.authorId !== userId) {
-            throw new errors_js_1.ForbiddenError('You can only delete your own comments');
+            throw new errors_1.ForbiddenError('You can only delete your own comments');
         }
-        await database_js_1.prisma.comment.update({
+        await database_1.prisma.comment.update({
             where: { id: commentId },
             data: { deletedAt: new Date() },
         });
@@ -167,11 +167,11 @@ exports.commentService = {
     // Get comment replies (schema doesn't have parentId, returns empty for now)
     async getCommentReplies(commentId, options = {}) {
         const { limit = 20 } = options;
-        const comment = await database_js_1.prisma.comment.findFirst({
+        const comment = await database_1.prisma.comment.findFirst({
             where: { id: commentId, deletedAt: null },
         });
         if (!comment) {
-            throw new errors_js_1.NotFoundError('Comment not found');
+            throw new errors_1.NotFoundError('Comment not found');
         }
         // Schema doesn't support nested comments/replies
         return {
@@ -185,13 +185,13 @@ exports.commentService = {
     },
     // Add reaction
     async addReaction(commentId, userId, emoji) {
-        const comment = await database_js_1.prisma.comment.findFirst({
+        const comment = await database_1.prisma.comment.findFirst({
             where: { id: commentId, deletedAt: null },
         });
         if (!comment) {
-            throw new errors_js_1.NotFoundError('Comment not found');
+            throw new errors_1.NotFoundError('Comment not found');
         }
-        const reaction = await database_js_1.prisma.commentReaction.upsert({
+        const reaction = await database_1.prisma.commentReaction.upsert({
             where: {
                 commentId_userId_emoji: {
                     commentId,
@@ -215,7 +215,7 @@ exports.commentService = {
     },
     // Remove reaction
     async removeReaction(commentId, userId, emoji) {
-        await database_js_1.prisma.commentReaction.deleteMany({
+        await database_1.prisma.commentReaction.deleteMany({
             where: {
                 commentId,
                 userId,
@@ -226,13 +226,13 @@ exports.commentService = {
     },
     // Get comment reactions
     async getCommentReactions(commentId) {
-        const comment = await database_js_1.prisma.comment.findFirst({
+        const comment = await database_1.prisma.comment.findFirst({
             where: { id: commentId, deletedAt: null },
         });
         if (!comment) {
-            throw new errors_js_1.NotFoundError('Comment not found');
+            throw new errors_1.NotFoundError('Comment not found');
         }
-        const reactions = await database_js_1.prisma.commentReaction.findMany({
+        const reactions = await database_1.prisma.commentReaction.findMany({
             where: { commentId },
             include: {
                 user: {
@@ -257,7 +257,7 @@ exports.commentService = {
     },
     // Pin comment (schema doesn't have isPinned field, returns comment as-is)
     async pinComment(commentId, userId) {
-        const comment = await database_js_1.prisma.comment.findFirst({
+        const comment = await database_1.prisma.comment.findFirst({
             where: { id: commentId, deletedAt: null },
             include: {
                 author: {
@@ -266,7 +266,7 @@ exports.commentService = {
             },
         });
         if (!comment) {
-            throw new errors_js_1.NotFoundError('Comment not found');
+            throw new errors_1.NotFoundError('Comment not found');
         }
         // Schema doesn't support pinning, return comment with isPinned flag
         return {
@@ -276,7 +276,7 @@ exports.commentService = {
     },
     // Unpin comment
     async unpinComment(commentId, userId) {
-        const comment = await database_js_1.prisma.comment.findFirst({
+        const comment = await database_1.prisma.comment.findFirst({
             where: { id: commentId, deletedAt: null },
             include: {
                 author: {
@@ -285,7 +285,7 @@ exports.commentService = {
             },
         });
         if (!comment) {
-            throw new errors_js_1.NotFoundError('Comment not found');
+            throw new errors_1.NotFoundError('Comment not found');
         }
         return {
             ...comment,
@@ -294,7 +294,7 @@ exports.commentService = {
     },
     // Resolve comment (schema doesn't have isResolved field, returns comment as-is)
     async resolveComment(commentId, userId) {
-        const comment = await database_js_1.prisma.comment.findFirst({
+        const comment = await database_1.prisma.comment.findFirst({
             where: { id: commentId, deletedAt: null },
             include: {
                 author: {
@@ -303,7 +303,7 @@ exports.commentService = {
             },
         });
         if (!comment) {
-            throw new errors_js_1.NotFoundError('Comment not found');
+            throw new errors_1.NotFoundError('Comment not found');
         }
         return {
             ...comment,
@@ -314,7 +314,7 @@ exports.commentService = {
     },
     // Unresolve comment
     async unresolveComment(commentId, userId) {
-        const comment = await database_js_1.prisma.comment.findFirst({
+        const comment = await database_1.prisma.comment.findFirst({
             where: { id: commentId, deletedAt: null },
             include: {
                 author: {
@@ -323,7 +323,7 @@ exports.commentService = {
             },
         });
         if (!comment) {
-            throw new errors_js_1.NotFoundError('Comment not found');
+            throw new errors_1.NotFoundError('Comment not found');
         }
         return {
             ...comment,

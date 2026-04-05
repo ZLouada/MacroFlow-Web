@@ -1,6 +1,6 @@
 import nodemailer from 'nodemailer';
-import { config } from '../config/index.js';
-import { logger } from '../utils/logger.js';
+import { config } from '../config/index';
+import { logger } from '../utils/logger';
 
 // ===========================================
 // Email Transporter

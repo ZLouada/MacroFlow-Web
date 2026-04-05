@@ -8,14 +8,14 @@ import {
   FileCleanupJobData,
   SimulationJobData,
   AnalyticsJobData,
-} from './queue.js';
-import { logger } from '../utils/logger.js';
-import { emailService } from '../services/email.service.js';
-import { notificationService } from '../services/notification.service.js';
-import { activityService } from '../services/activity.service.js';
-import { uploadService } from '../services/upload.service.js';
-import { simulationService } from '../services/simulation.service.js';
-import { prisma } from '../config/database.js';
+} from './queue';
+import { logger } from '../utils/logger';
+import { emailService } from '../services/email.service';
+import { notificationService } from '../services/notification.service';
+import { activityService } from '../services/activity.service';
+import { uploadService } from '../services/upload.service';
+import { simulationService } from '../services/simulation.service';
+import { prisma } from '../config/database';
 import { NotificationType } from '@prisma/client';
 
 // Email worker

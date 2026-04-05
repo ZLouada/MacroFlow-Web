@@ -1,11 +1,11 @@
 import http from 'http';
-import app, { gracefulShutdown } from './app.js';
-import { config } from './config/index.js';
-import { logger } from './utils/logger.js';
-import { prisma } from './config/database.js';
-import { connectRedis } from './config/redis.js';
-import { initializeSocket } from './services/socket.service.js';
-import { startWorkers } from './jobs/workers.js';
+import app, { gracefulShutdown } from './app';
+import { config } from './config/index';
+import { logger } from './utils/logger';
+import { prisma } from './config/database';
+import { connectRedis } from './config/redis';
+import { initializeSocket } from './services/socket.service';
+import { startWorkers } from './jobs/workers';
 
 // Create HTTP server
 const server = http.createServer(app);

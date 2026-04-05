@@ -1,5 +1,5 @@
 import { Worker } from 'bullmq';
-import { EmailJobData, NotificationJobData, ActivityLogJobData, FileCleanupJobData, SimulationJobData, AnalyticsJobData } from './queue.js';
+import { EmailJobData, NotificationJobData, ActivityLogJobData, FileCleanupJobData, SimulationJobData, AnalyticsJobData } from './queue';
 declare const emailWorker: Worker<EmailJobData, any, string>;
 declare const notificationWorker: Worker<NotificationJobData, any, string>;
 declare const activityLogWorker: Worker<ActivityLogJobData, any, string>;

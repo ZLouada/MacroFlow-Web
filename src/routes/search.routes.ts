@@ -1,7 +1,7 @@
 import { Router } from 'express';
-import { searchController } from '../controllers/search.controller.js';
-import { asyncHandler } from '../middleware/error.middleware.js';
-import { authenticate, requireWorkspaceAccess } from '../middleware/auth.middleware.js';
+import { searchController } from '../controllers/search.controller';
+import { asyncHandler } from '../middleware/error.middleware';
+import { authenticate, requireWorkspaceAccess } from '../middleware/auth.middleware';
 
 const router = Router();
 

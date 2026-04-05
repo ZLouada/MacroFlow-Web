@@ -1,12 +1,12 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.columnService = void 0;
-const database_js_1 = require("../config/database.js");
-const errors_js_1 = require("../utils/errors.js");
+const database_1 = require("../config/database");
+const errors_1 = require("../utils/errors");
 exports.columnService = {
     // Get columns by project (alias for controller)
     async getColumnsByProject(projectId, includeTasks = true) {
-        const columns = await database_js_1.prisma.kanbanColumn.findMany({
+        const columns = await database_1.prisma.kanbanColumn.findMany({
             where: { projectId },
             orderBy: { order: 'asc' },
             include: {
@@ -43,7 +43,7 @@ exports.columnService = {
     },
     // Get column by ID
     async getColumnById(columnId) {
-        const column = await database_js_1.prisma.kanbanColumn.findUnique({
+        const column = await database_1.prisma.kanbanColumn.findUnique({
             where: { id: columnId },
             include: {
                 tasks: {
@@ -67,7 +67,7 @@ exports.columnService = {
             },
         });
         if (!column) {
-            throw new errors_js_1.NotFoundError('Column not found');
+            throw new errors_1.NotFoundError('Column not found');
         }
         return {
             ...column,
@@ -83,18 +83,18 @@ exports.columnService = {
     // Create column
     async createColumn(projectId, userId, data) {
         // Verify project exists
-        const project = await database_js_1.prisma.project.findUnique({
+        const project = await database_1.prisma.project.findUnique({
             where: { id: projectId },
         });
         if (!project) {
-            throw new errors_js_1.NotFoundError('Project not found');
+            throw new errors_1.NotFoundError('Project not found');
         }
         // Get max order
-        const maxOrder = await database_js_1.prisma.kanbanColumn.aggregate({
+        const maxOrder = await database_1.prisma.kanbanColumn.aggregate({
             where: { projectId },
             _max: { order: true },
         });
-        const column = await database_js_1.prisma.kanbanColumn.create({
+        const column = await database_1.prisma.kanbanColumn.create({
             data: {
                 projectId,
                 title: data.title,
@@ -108,11 +108,11 @@ exports.columnService = {
     },
     // Update column
     async updateColumn(columnId, userId, data) {
-        const column = await database_js_1.prisma.kanbanColumn.findUnique({
+        const column = await database_1.prisma.kanbanColumn.findUnique({
             where: { id: columnId },
         });
         if (!column) {
-            throw new errors_js_1.NotFoundError('Column not found');
+            throw new errors_1.NotFoundError('Column not found');
         }
         const updateData = {};
         if (data.title !== undefined)
@@ -123,7 +123,7 @@ exports.columnService = {
             updateData.color = data.color;
         if (data.taskLimit !== undefined)
             updateData.taskLimit = data.taskLimit;
-        const updated = await database_js_1.prisma.kanbanColumn.update({
+        const updated = await database_1.prisma.kanbanColumn.update({
             where: { id: columnId },
             data: updateData,
         });
@@ -131,7 +131,7 @@ exports.columnService = {
     },
     // Delete column
     async deleteColumn(columnId, userId, moveTasksTo) {
-        const column = await database_js_1.prisma.kanbanColumn.findUnique({
+        const column = await database_1.prisma.kanbanColumn.findUnique({
             where: { id: columnId },
             include: {
                 _count: { select: { tasks: true } },
@@ -139,44 +139,44 @@ exports.columnService = {
             },
         });
         if (!column) {
-            throw new errors_js_1.NotFoundError('Column not found');
+            throw new errors_1.NotFoundError('Column not found');
         }
         // If column has tasks, require target column
         if (column._count.tasks > 0) {
             if (!moveTasksTo) {
-                throw new errors_js_1.BadRequestError('Column has tasks. Specify a target column to move them to.');
+                throw new errors_1.BadRequestError('Column has tasks. Specify a target column to move them to.');
             }
             // Verify target column belongs to same project
-            const targetColumn = await database_js_1.prisma.kanbanColumn.findFirst({
+            const targetColumn = await database_1.prisma.kanbanColumn.findFirst({
                 where: { id: moveTasksTo, projectId: column.projectId },
             });
             if (!targetColumn) {
-                throw new errors_js_1.NotFoundError('Target column not found');
+                throw new errors_1.NotFoundError('Target column not found');
             }
             // Move tasks to target column
-            await database_js_1.prisma.task.updateMany({
+            await database_1.prisma.task.updateMany({
                 where: { columnId },
                 data: { columnId: moveTasksTo, status: targetColumn.status },
             });
         }
-        await database_js_1.prisma.kanbanColumn.delete({
+        await database_1.prisma.kanbanColumn.delete({
             where: { id: columnId },
         });
         return { success: true };
     },
     // Reorder single column
     async reorderColumn(columnId, userId, position) {
-        const column = await database_js_1.prisma.kanbanColumn.findUnique({
+        const column = await database_1.prisma.kanbanColumn.findUnique({
             where: { id: columnId },
         });
         if (!column) {
-            throw new errors_js_1.NotFoundError('Column not found');
+            throw new errors_1.NotFoundError('Column not found');
         }
         const oldPosition = column.order;
         // Update positions of other columns
         if (position < oldPosition) {
             // Moving up - increment columns between new and old position
-            await database_js_1.prisma.kanbanColumn.updateMany({
+            await database_1.prisma.kanbanColumn.updateMany({
                 where: {
                     projectId: column.projectId,
                     order: { gte: position, lt: oldPosition },
@@ -189,7 +189,7 @@ exports.columnService = {
         }
         else if (position > oldPosition) {
             // Moving down - decrement columns between old and new position
-            await database_js_1.prisma.kanbanColumn.updateMany({
+            await database_1.prisma.kanbanColumn.updateMany({
                 where: {
                     projectId: column.projectId,
                     order: { gt: oldPosition, lte: position },
@@ -200,7 +200,7 @@ exports.columnService = {
                 },
             });
         }
-        const updated = await database_js_1.prisma.kanbanColumn.update({
+        const updated = await database_1.prisma.kanbanColumn.update({
             where: { id: columnId },
             data: { order: position },
         });
@@ -208,21 +208,21 @@ exports.columnService = {
     },
     // Reorder all columns
     async reorderAllColumns(projectId, userId, columnIds) {
-        const updates = columnIds.map((columnId, index) => database_js_1.prisma.kanbanColumn.update({
+        const updates = columnIds.map((columnId, index) => database_1.prisma.kanbanColumn.update({
             where: { id: columnId },
             data: { order: index },
         }));
-        await database_js_1.prisma.$transaction(updates);
+        await database_1.prisma.$transaction(updates);
         return this.getColumnsByProject(projectId);
     },
     // Get tasks in column with pagination
     async getColumnTasks(columnId, options) {
         const { cursor, limit = 20 } = options;
-        const column = await database_js_1.prisma.kanbanColumn.findUnique({
+        const column = await database_1.prisma.kanbanColumn.findUnique({
             where: { id: columnId },
         });
         if (!column) {
-            throw new errors_js_1.NotFoundError('Column not found');
+            throw new errors_1.NotFoundError('Column not found');
         }
         const where = {
             columnId,
@@ -231,7 +231,7 @@ exports.columnService = {
         if (cursor) {
             where.id = { lt: cursor };
         }
-        const tasks = await database_js_1.prisma.task.findMany({
+        const tasks = await database_1.prisma.task.findMany({
             where,
             take: limit + 1,
             orderBy: { order: 'asc' },
@@ -266,13 +266,13 @@ exports.columnService = {
     },
     // Set WIP limit
     async setWipLimit(columnId, userId, limit) {
-        const column = await database_js_1.prisma.kanbanColumn.findUnique({
+        const column = await database_1.prisma.kanbanColumn.findUnique({
             where: { id: columnId },
         });
         if (!column) {
-            throw new errors_js_1.NotFoundError('Column not found');
+            throw new errors_1.NotFoundError('Column not found');
         }
-        const updated = await database_js_1.prisma.kanbanColumn.update({
+        const updated = await database_1.prisma.kanbanColumn.update({
             where: { id: columnId },
             data: { taskLimit: limit },
         });
@@ -280,13 +280,13 @@ exports.columnService = {
     },
     // Set column color
     async setColumnColor(columnId, userId, color) {
-        const column = await database_js_1.prisma.kanbanColumn.findUnique({
+        const column = await database_1.prisma.kanbanColumn.findUnique({
             where: { id: columnId },
         });
         if (!column) {
-            throw new errors_js_1.NotFoundError('Column not found');
+            throw new errors_1.NotFoundError('Column not found');
         }
-        const updated = await database_js_1.prisma.kanbanColumn.update({
+        const updated = await database_1.prisma.kanbanColumn.update({
             where: { id: columnId },
             data: { color },
         });
@@ -294,11 +294,11 @@ exports.columnService = {
     },
     // Toggle collapse (note: schema doesn't have collapsed field, return column as-is)
     async toggleCollapse(columnId, userId, collapsed) {
-        const column = await database_js_1.prisma.kanbanColumn.findUnique({
+        const column = await database_1.prisma.kanbanColumn.findUnique({
             where: { id: columnId },
         });
         if (!column) {
-            throw new errors_js_1.NotFoundError('Column not found');
+            throw new errors_1.NotFoundError('Column not found');
         }
         // Schema doesn't have collapsed field, so we just return the column
         // This could be stored in user preferences instead
@@ -309,26 +309,26 @@ exports.columnService = {
     },
     // Clear column (delete or archive all tasks)
     async clearColumn(columnId, userId, archive = false) {
-        const column = await database_js_1.prisma.kanbanColumn.findUnique({
+        const column = await database_1.prisma.kanbanColumn.findUnique({
             where: { id: columnId },
             include: {
                 _count: { select: { tasks: true } },
             },
         });
         if (!column) {
-            throw new errors_js_1.NotFoundError('Column not found');
+            throw new errors_1.NotFoundError('Column not found');
         }
         const count = column._count.tasks;
         if (archive) {
             // Soft delete (archive)
-            await database_js_1.prisma.task.updateMany({
+            await database_1.prisma.task.updateMany({
                 where: { columnId, deletedAt: null },
                 data: { deletedAt: new Date() },
             });
         }
         else {
             // Hard delete
-            await database_js_1.prisma.task.deleteMany({
+            await database_1.prisma.task.deleteMany({
                 where: { columnId },
             });
         }

@@ -1,14 +1,14 @@
 import { Router } from 'express';
-import { projectController } from '../controllers/project.controller.js';
-import { validate, asyncHandler } from '../middleware/error.middleware.js';
-import { authenticate, requireWorkspaceAccess, requireProjectAccess } from '../middleware/auth.middleware.js';
+import { projectController } from '../controllers/project.controller';
+import { validate, asyncHandler } from '../middleware/error.middleware';
+import { authenticate, requireWorkspaceAccess, requireProjectAccess } from '../middleware/auth.middleware';
 import {
   createProjectSchema,
   updateProjectSchema,
   addProjectMemberSchema,
   updateProjectMemberSchema,
-} from '../validations/project.validation.js';
-import { WorkspaceRole, ProjectRole } from '../types/index.js';
+} from '../validations/project.validation';
+import { WorkspaceRole, ProjectRole } from '../types/index';
 
 const router = Router();
 

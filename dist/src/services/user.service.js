@@ -5,9 +5,9 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.userService = void 0;
 const bcryptjs_1 = __importDefault(require("bcryptjs"));
-const database_js_1 = require("../config/database.js");
-const errors_js_1 = require("../utils/errors.js");
-const upload_service_js_1 = require("./upload.service.js");
+const database_1 = require("../config/database");
+const errors_1 = require("../utils/errors");
+const upload_service_1 = require("./upload.service");
 // ===========================================
 // User Service
 // ===========================================
@@ -29,7 +29,7 @@ exports.userService = {
             ...(role && { role: role }),
         };
         const [users, total] = await Promise.all([
-            database_js_1.prisma.user.findMany({
+            database_1.prisma.user.findMany({
                 where,
                 skip,
                 take: limit,
@@ -46,7 +46,7 @@ exports.userService = {
                     deletedAt: true,
                 },
             }),
-            database_js_1.prisma.user.count({ where }),
+            database_1.prisma.user.count({ where }),
         ]);
         return {
             data: users,
@@ -64,7 +64,7 @@ exports.userService = {
      * Get user by ID
      */
     async getUserById(userId) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { id: userId, deletedAt: null },
             select: {
                 id: true,
@@ -80,7 +80,7 @@ exports.userService = {
             },
         });
         if (!user) {
-            throw new errors_js_1.NotFoundError('User not found');
+            throw new errors_1.NotFoundError('User not found');
         }
         return user;
     },
@@ -88,22 +88,22 @@ exports.userService = {
      * Update user profile
      */
     async updateUser(userId, data) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { id: userId, deletedAt: null },
         });
         if (!user) {
-            throw new errors_js_1.NotFoundError('User not found');
+            throw new errors_1.NotFoundError('User not found');
         }
         // Check if email is being changed and if it's already taken
         if (data.email && data.email !== user.email) {
-            const existingUser = await database_js_1.prisma.user.findUnique({
+            const existingUser = await database_1.prisma.user.findUnique({
                 where: { email: data.email.toLowerCase() },
             });
             if (existingUser) {
-                throw new errors_js_1.BadRequestError('Email is already taken');
+                throw new errors_1.BadRequestError('Email is already taken');
             }
         }
-        const updatedUser = await database_js_1.prisma.user.update({
+        const updatedUser = await database_1.prisma.user.update({
             where: { id: userId },
             data: {
                 ...(data.name && { name: data.name }),
@@ -137,7 +137,7 @@ exports.userService = {
             userId,
             ...cleanData,
         };
-        const preferences = await database_js_1.prisma.userPreferences.upsert({
+        const preferences = await database_1.prisma.userPreferences.upsert({
             where: { userId },
             create: createData,
             update: cleanData,
@@ -148,22 +148,22 @@ exports.userService = {
      * Upload user avatar
      */
     async updateAvatar(userId, file) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { id: userId },
         });
         if (!user) {
-            throw new errors_js_1.NotFoundError('User not found');
+            throw new errors_1.NotFoundError('User not found');
         }
         // Delete old avatar if exists
         if (user.avatar) {
-            await upload_service_js_1.uploadService.deleteFile(user.avatar).catch(() => {
+            await upload_service_1.uploadService.deleteFile(user.avatar).catch(() => {
                 // Ignore errors when deleting old avatar
             });
         }
         // Upload new avatar
-        const result = await upload_service_js_1.uploadService.uploadFile(file, 'avatars');
+        const result = await upload_service_1.uploadService.uploadFile(file, 'avatars');
         // Update user with new avatar URL
-        await database_js_1.prisma.user.update({
+        await database_1.prisma.user.update({
             where: { id: userId },
             data: { avatar: result.url },
         });
@@ -173,18 +173,18 @@ exports.userService = {
      * Delete user avatar
      */
     async deleteAvatar(userId) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { id: userId },
         });
         if (!user) {
-            throw new errors_js_1.NotFoundError('User not found');
+            throw new errors_1.NotFoundError('User not found');
         }
         if (user.avatar) {
-            await upload_service_js_1.uploadService.deleteFile(user.avatar).catch(() => {
+            await upload_service_1.uploadService.deleteFile(user.avatar).catch(() => {
                 // Ignore errors when deleting avatar
             });
         }
-        await database_js_1.prisma.user.update({
+        await database_1.prisma.user.update({
             where: { id: userId },
             data: { avatar: null },
         });
@@ -205,7 +205,7 @@ exports.userService = {
                 },
             }),
         };
-        const users = await database_js_1.prisma.user.findMany({
+        const users = await database_1.prisma.user.findMany({
             where,
             take: limit,
             select: {
@@ -221,7 +221,7 @@ exports.userService = {
      * Get user's workspaces
      */
     async getUserWorkspaces(userId) {
-        const memberships = await database_js_1.prisma.workspaceMember.findMany({
+        const memberships = await database_1.prisma.workspaceMember.findMany({
             where: { userId },
             include: {
                 workspace: {
@@ -267,7 +267,7 @@ exports.userService = {
                 createdAt: { lt: new Date(cursor) },
             }),
         };
-        const tasks = await database_js_1.prisma.task.findMany({
+        const tasks = await database_1.prisma.task.findMany({
             where,
             take: limit + 1,
             orderBy: { createdAt: 'desc' },
@@ -314,7 +314,7 @@ exports.userService = {
                 createdAt: { lt: new Date(cursor) },
             }),
         };
-        const notifications = await database_js_1.prisma.notification.findMany({
+        const notifications = await database_1.prisma.notification.findMany({
             where,
             take: limit + 1,
             orderBy: { createdAt: 'desc' },
@@ -334,24 +334,24 @@ exports.userService = {
      * Delete user account (soft delete)
      */
     async deleteUser(userId, password) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { id: userId, deletedAt: null },
         });
         if (!user) {
-            throw new errors_js_1.NotFoundError('User not found');
+            throw new errors_1.NotFoundError('User not found');
         }
         // Verify password
         const isValidPassword = await bcryptjs_1.default.compare(password, user.password);
         if (!isValidPassword) {
-            throw new errors_js_1.ForbiddenError('Invalid password');
+            throw new errors_1.ForbiddenError('Invalid password');
         }
         // Soft delete user
-        await database_js_1.prisma.user.update({
+        await database_1.prisma.user.update({
             where: { id: userId },
             data: { deletedAt: new Date() },
         });
         // Delete all sessions
-        await database_js_1.prisma.session.deleteMany({
+        await database_1.prisma.session.deleteMany({
             where: { userId },
         });
     },
@@ -366,7 +366,7 @@ exports.userService = {
                 createdAt: { lt: new Date(cursor) },
             }),
         };
-        const activities = await database_js_1.prisma.activity.findMany({
+        const activities = await database_1.prisma.activity.findMany({
             where,
             take: limit + 1,
             orderBy: { createdAt: 'desc' },
@@ -400,13 +400,13 @@ exports.userService = {
      * Update user role (admin only)
      */
     async updateUserRole(userId, role) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { id: userId, deletedAt: null },
         });
         if (!user) {
-            throw new errors_js_1.NotFoundError('User not found');
+            throw new errors_1.NotFoundError('User not found');
         }
-        const updatedUser = await database_js_1.prisma.user.update({
+        const updatedUser = await database_1.prisma.user.update({
             where: { id: userId },
             data: { role: role },
             select: {
@@ -426,14 +426,14 @@ exports.userService = {
      * Suspend user (admin only)
      */
     async suspendUser(userId, _reason) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { id: userId, deletedAt: null },
         });
         if (!user) {
-            throw new errors_js_1.NotFoundError('User not found');
+            throw new errors_1.NotFoundError('User not found');
         }
         // Soft delete the user to suspend them
-        const suspendedUser = await database_js_1.prisma.user.update({
+        const suspendedUser = await database_1.prisma.user.update({
             where: { id: userId },
             data: { deletedAt: new Date() },
             select: {
@@ -449,7 +449,7 @@ exports.userService = {
             },
         });
         // Invalidate all sessions
-        await database_js_1.prisma.session.deleteMany({
+        await database_1.prisma.session.deleteMany({
             where: { userId },
         });
         return suspendedUser;
@@ -458,13 +458,13 @@ exports.userService = {
      * Activate user (admin only)
      */
     async activateUser(userId) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { id: userId },
         });
         if (!user) {
-            throw new errors_js_1.NotFoundError('User not found');
+            throw new errors_1.NotFoundError('User not found');
         }
-        const activatedUser = await database_js_1.prisma.user.update({
+        const activatedUser = await database_1.prisma.user.update({
             where: { id: userId },
             data: { deletedAt: null },
             select: {
@@ -485,23 +485,23 @@ exports.userService = {
      * Change password
      */
     async changePassword(userId, currentPassword, newPassword) {
-        const user = await database_js_1.prisma.user.findUnique({
+        const user = await database_1.prisma.user.findUnique({
             where: { id: userId },
         });
         if (!user) {
-            throw new errors_js_1.NotFoundError('User not found');
+            throw new errors_1.NotFoundError('User not found');
         }
         const isValidPassword = await bcryptjs_1.default.compare(currentPassword, user.password);
         if (!isValidPassword) {
-            throw new errors_js_1.ForbiddenError('Current password is incorrect');
+            throw new errors_1.ForbiddenError('Current password is incorrect');
         }
         const hashedPassword = await bcryptjs_1.default.hash(newPassword, 12);
-        await database_js_1.prisma.user.update({
+        await database_1.prisma.user.update({
             where: { id: userId },
             data: { password: hashedPassword },
         });
         // Invalidate all other sessions
-        await database_js_1.prisma.session.deleteMany({
+        await database_1.prisma.session.deleteMany({
             where: { userId },
         });
     },

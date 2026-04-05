@@ -1,15 +1,15 @@
 import { Router } from 'express';
-import { taskController } from '../controllers/task.controller.js';
-import { validate, asyncHandler } from '../middleware/error.middleware.js';
-import { authenticate, requireProjectAccess } from '../middleware/auth.middleware.js';
+import { taskController } from '../controllers/task.controller';
+import { validate, asyncHandler } from '../middleware/error.middleware';
+import { authenticate, requireProjectAccess } from '../middleware/auth.middleware';
 import {
   createTaskSchema,
   updateTaskSchema,
   moveTaskSchema,
   bulkUpdateTasksSchema,
   listTasksQuerySchema,
-} from '../validations/task.validation.js';
-import { ProjectRole } from '../types/index.js';
+} from '../validations/task.validation';
+import { ProjectRole } from '../types/index';
 
 const router = Router();
 

@@ -1,3 +1,3 @@
 // Jobs barrel export
-export * from './queue.js';
-export * from './workers.js';
+export * from './queue';
+export * from './workers';

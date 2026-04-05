@@ -1,19 +1,19 @@
 import { Router, Request, Response } from 'express';
-import authRoutes from './auth.routes.js';
-import userRoutes from './user.routes.js';
-import workspaceRoutes from './workspace.routes.js';
-import projectRoutes from './project.routes.js';
-import taskRoutes from './task.routes.js';
-import columnRoutes from './column.routes.js';
-import commentRoutes from './comment.routes.js';
-import labelRoutes from './label.routes.js';
-import dashboardRoutes from './dashboard.routes.js';
-import notificationRoutes from './notification.routes.js';
-import searchRoutes from './search.routes.js';
-import simulationRoutes from './simulation.routes.js';
-import { prisma } from '../config/database.js';
-import { getRedisClient } from '../config/redis.js';
-import { getQueueHealth } from '../jobs/queue.js';
+import authRoutes from './auth.routes';
+import userRoutes from './user.routes';
+import workspaceRoutes from './workspace.routes';
+import projectRoutes from './project.routes';
+import taskRoutes from './task.routes';
+import columnRoutes from './column.routes';
+import commentRoutes from './comment.routes';
+import labelRoutes from './label.routes';
+import dashboardRoutes from './dashboard.routes';
+import notificationRoutes from './notification.routes';
+import searchRoutes from './search.routes';
+import simulationRoutes from './simulation.routes';
+import { prisma } from '../config/database';
+import { getRedisClient } from '../config/redis';
+import { getQueueHealth } from '../jobs/queue';
 
 const router = Router();
 

@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { simulationController } from '../controllers/simulation.controller.js';
-import { validate, asyncHandler } from '../middleware/error.middleware.js';
-import { authenticate, requireWorkspaceAccess } from '../middleware/auth.middleware.js';
+import { simulationController } from '../controllers/simulation.controller';
+import { validate, asyncHandler } from '../middleware/error.middleware';
+import { authenticate, requireWorkspaceAccess } from '../middleware/auth.middleware';
 import {
   createScenarioSchema,
   updateScenarioSchema,
   simulateSchema,
-} from '../validations/scenario.validation.js';
+} from '../validations/scenario.validation';
 
 const router = Router();
 

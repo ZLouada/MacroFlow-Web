@@ -5,11 +5,11 @@ import compression from 'compression';
 import morgan from 'morgan';
 import cookieParser from 'cookie-parser';
 import path from 'path';
-import { config } from './config/index.js';
-import { logger } from './utils/logger.js';
-import { errorHandler, notFoundHandler } from './middleware/error.middleware.js';
-import { generalRateLimiter } from './middleware/rateLimit.middleware.js';
-import routes from './routes/index.js';
+import { config } from './config/index';
+import { logger } from './utils/logger';
+import { errorHandler, notFoundHandler } from './middleware/error.middleware';
+import { generalRateLimiter } from './middleware/rateLimit.middleware';
+import routes from './routes/index';
 
 // Create Express app
 const app: Express = express();

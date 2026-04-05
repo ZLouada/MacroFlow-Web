@@ -8,20 +8,20 @@ const client_s3_1 = require("@aws-sdk/client-s3");
 const s3_request_presigner_1 = require("@aws-sdk/s3-request-presigner");
 const uuid_1 = require("uuid");
 const path_1 = __importDefault(require("path"));
-const index_js_1 = require("../config/index.js");
-const errors_js_1 = require("../utils/errors.js");
-const logger_js_1 = require("../utils/logger.js");
+const index_1 = require("../config/index");
+const errors_1 = require("../utils/errors");
+const logger_1 = require("../utils/logger");
 // S3 client configuration
 const s3Client = new client_s3_1.S3Client({
-    region: index_js_1.config.s3.region,
-    endpoint: index_js_1.config.s3.endpoint || undefined,
-    credentials: index_js_1.config.s3.accessKey && index_js_1.config.s3.secretKey ? {
-        accessKeyId: index_js_1.config.s3.accessKey,
-        secretAccessKey: index_js_1.config.s3.secretKey,
+    region: index_1.config.s3.region,
+    endpoint: index_1.config.s3.endpoint || undefined,
+    credentials: index_1.config.s3.accessKey && index_1.config.s3.secretKey ? {
+        accessKeyId: index_1.config.s3.accessKey,
+        secretAccessKey: index_1.config.s3.secretKey,
     } : undefined,
-    forcePathStyle: !!index_js_1.config.s3.endpoint, // Required for S3-compatible services like MinIO
+    forcePathStyle: !!index_1.config.s3.endpoint, // Required for S3-compatible services like MinIO
 });
-const BUCKET_NAME = index_js_1.config.s3.bucket || 'macroflow-uploads';
+const BUCKET_NAME = index_1.config.s3.bucket || 'macroflow-uploads';
 // Allowed file types and size limits
 const ALLOWED_IMAGE_TYPES = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
 const ALLOWED_DOCUMENT_TYPES = [
@@ -58,10 +58,10 @@ class UploadService {
     validateFile(file, options = {}) {
         const { allowedTypes = ALL_ALLOWED_TYPES, maxSize = MAX_FILE_SIZE } = options;
         if (!allowedTypes.includes(file.mimetype)) {
-            throw new errors_js_1.BadRequestError(`File type ${file.mimetype} is not allowed. Allowed types: ${allowedTypes.join(', ')}`, 'INVALID_FILE_TYPE');
+            throw new errors_1.BadRequestError(`File type ${file.mimetype} is not allowed. Allowed types: ${allowedTypes.join(', ')}`, 'INVALID_FILE_TYPE');
         }
         if (file.size > maxSize) {
-            throw new errors_js_1.BadRequestError(`File size ${(file.size / 1024 / 1024).toFixed(2)}MB exceeds maximum allowed size of ${(maxSize / 1024 / 1024).toFixed(2)}MB`, 'FILE_TOO_LARGE');
+            throw new errors_1.BadRequestError(`File size ${(file.size / 1024 / 1024).toFixed(2)}MB exceeds maximum allowed size of ${(maxSize / 1024 / 1024).toFixed(2)}MB`, 'FILE_TOO_LARGE');
         }
     }
     /**
@@ -83,9 +83,9 @@ class UploadService {
             });
             await s3Client.send(command);
             const url = options.isPublic
-                ? `${index_js_1.config.s3.endpoint || `https://${BUCKET_NAME}.s3.${index_js_1.config.s3.region}.amazonaws.com`}/${key}`
+                ? `${index_1.config.s3.endpoint || `https://${BUCKET_NAME}.s3.${index_1.config.s3.region}.amazonaws.com`}/${key}`
                 : await this.getSignedDownloadUrl(key);
-            logger_js_1.logger.info('File uploaded successfully', { key, size: file.size });
+            logger_1.logger.info('File uploaded successfully', { key, size: file.size });
             return {
                 key,
                 url,
@@ -96,8 +96,8 @@ class UploadService {
             };
         }
         catch (error) {
-            logger_js_1.logger.error('Failed to upload file to S3', { error, key });
-            throw new errors_js_1.InternalServerError('Failed to upload file', 'UPLOAD_FAILED');
+            logger_1.logger.error('Failed to upload file to S3', { error, key });
+            throw new errors_1.InternalServerError('Failed to upload file', 'UPLOAD_FAILED');
         }
     }
     /**
@@ -157,11 +157,11 @@ class UploadService {
                 Key: key,
             });
             await s3Client.send(command);
-            logger_js_1.logger.info('File deleted successfully', { key });
+            logger_1.logger.info('File deleted successfully', { key });
         }
         catch (error) {
-            logger_js_1.logger.error('Failed to delete file from S3', { error, key });
-            throw new errors_js_1.InternalServerError('Failed to delete file', 'DELETE_FAILED');
+            logger_1.logger.error('Failed to delete file from S3', { error, key });
+            throw new errors_1.InternalServerError('Failed to delete file', 'DELETE_FAILED');
         }
     }
     /**
@@ -183,8 +183,8 @@ class UploadService {
             return url;
         }
         catch (error) {
-            logger_js_1.logger.error('Failed to generate signed download URL', { error, key });
-            throw new errors_js_1.InternalServerError('Failed to generate download URL', 'URL_GENERATION_FAILED');
+            logger_1.logger.error('Failed to generate signed download URL', { error, key });
+            throw new errors_1.InternalServerError('Failed to generate download URL', 'URL_GENERATION_FAILED');
         }
     }
     /**
@@ -193,7 +193,7 @@ class UploadService {
     async getPresignedUploadUrl(folder, filename, mimeType, entityId, expiresIn = 3600) {
         // Validate mime type
         if (!ALL_ALLOWED_TYPES.includes(mimeType)) {
-            throw new errors_js_1.BadRequestError(`File type ${mimeType} is not allowed`, 'INVALID_FILE_TYPE');
+            throw new errors_1.BadRequestError(`File type ${mimeType} is not allowed`, 'INVALID_FILE_TYPE');
         }
         const key = this.generateFileKey(folder, filename, entityId);
         try {
@@ -210,8 +210,8 @@ class UploadService {
             };
         }
         catch (error) {
-            logger_js_1.logger.error('Failed to generate presigned upload URL', { error, key });
-            throw new errors_js_1.InternalServerError('Failed to generate upload URL', 'URL_GENERATION_FAILED');
+            logger_1.logger.error('Failed to generate presigned upload URL', { error, key });
+            throw new errors_1.InternalServerError('Failed to generate upload URL', 'URL_GENERATION_FAILED');
         }
     }
     /**
@@ -250,8 +250,8 @@ class UploadService {
             };
         }
         catch (error) {
-            logger_js_1.logger.error('Failed to get file metadata', { error, key });
-            throw new errors_js_1.NotFoundError('File not found', 'FILE_NOT_FOUND');
+            logger_1.logger.error('Failed to get file metadata', { error, key });
+            throw new errors_1.NotFoundError('File not found', 'FILE_NOT_FOUND');
         }
     }
     /**
@@ -267,12 +267,12 @@ class UploadService {
                 Key: destinationKey,
             });
             await s3Client.send(command);
-            logger_js_1.logger.info('File copied successfully', { sourceKey, destinationKey });
+            logger_1.logger.info('File copied successfully', { sourceKey, destinationKey });
             return destinationKey;
         }
         catch (error) {
-            logger_js_1.logger.error('Failed to copy file', { error, sourceKey, destinationKey });
-            throw new errors_js_1.InternalServerError('Failed to copy file', 'COPY_FAILED');
+            logger_1.logger.error('Failed to copy file', { error, sourceKey, destinationKey });
+            throw new errors_1.InternalServerError('Failed to copy file', 'COPY_FAILED');
         }
     }
 }

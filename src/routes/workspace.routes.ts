@@ -1,16 +1,16 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { workspaceController } from '../controllers/workspace.controller.js';
-import { validate, asyncHandler } from '../middleware/error.middleware.js';
-import { authenticate, requireWorkspaceAccess } from '../middleware/auth.middleware.js';
-import { uploadRateLimiter } from '../middleware/rateLimit.middleware.js';
+import { workspaceController } from '../controllers/workspace.controller';
+import { validate, asyncHandler } from '../middleware/error.middleware';
+import { authenticate, requireWorkspaceAccess } from '../middleware/auth.middleware';
+import { uploadRateLimiter } from '../middleware/rateLimit.middleware';
 import {
   createWorkspaceSchema,
   updateWorkspaceSchema,
   inviteMemberSchema,
   updateMemberRoleSchema,
-} from '../validations/workspace.validation.js';
-import { WorkspaceRole } from '../types/index.js';
+} from '../validations/workspace.validation';
+import { WorkspaceRole } from '../types/index';
 
 const router = Router();
 

@@ -1,4 +1,4 @@
-export { errorHandler, notFoundHandler, asyncHandler, validate } from './error.middleware.js';
+export { errorHandler, notFoundHandler, asyncHandler, validate } from './error.middleware';
 export {
   authenticate,
   optionalAuth,
@@ -6,11 +6,11 @@ export {
   requireWorkspaceAccess,
   requireProjectAccess,
   requireEmailVerified,
-} from './auth.middleware.js';
+} from './auth.middleware';
 export {
   generalRateLimiter,
   authRateLimiter,
   createRateLimiter,
   uploadRateLimiter,
   slowDown,
-} from './rateLimit.middleware.js';
+} from './rateLimit.middleware';

@@ -1,12 +1,12 @@
 import { Router } from 'express';
-import { labelController } from '../controllers/label.controller.js';
-import { validate, asyncHandler } from '../middleware/error.middleware.js';
-import { authenticate, requireWorkspaceAccess, requireProjectAccess } from '../middleware/auth.middleware.js';
+import { labelController } from '../controllers/label.controller';
+import { validate, asyncHandler } from '../middleware/error.middleware';
+import { authenticate, requireWorkspaceAccess, requireProjectAccess } from '../middleware/auth.middleware';
 import {
   createLabelSchema,
   updateLabelSchema,
-} from '../validations/comment.validation.js'; // Labels are in comment validation
-import { WorkspaceRole, ProjectRole } from '../types/index.js';
+} from '../validations/comment.validation'; // Labels are in comment validation
+import { WorkspaceRole, ProjectRole } from '../types/index';
 
 const router = Router();
 

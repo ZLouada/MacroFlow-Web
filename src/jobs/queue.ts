@@ -1,6 +1,6 @@
 import { Queue, Worker, Job, QueueEvents, ConnectionOptions } from 'bullmq';
-import { config } from '../config/index.js';
-import { logger } from '../utils/logger.js';
+import { config } from '../config/index';
+import { logger } from '../utils/logger';
 
 // Parse Redis URL safely
 const parseRedisUrl = (url: string): ConnectionOptions => {

@@ -1,9 +1,9 @@
 import { Response, NextFunction } from 'express';
 import { ZodError, ZodSchema } from 'zod';
-import { AppError, ValidationError } from '../utils/errors.js';
-import { logger } from '../utils/logger.js';
-import { ApiResponse, AuthenticatedRequest } from '../types/index.js';
-import config from '../config/index.js';
+import { AppError, ValidationError } from '../utils/errors';
+import { logger } from '../utils/logger';
+import { ApiResponse, AuthenticatedRequest } from '../types/index';
+import config from '../config/index';
 
 // ===========================================
 // Error Handler Middleware

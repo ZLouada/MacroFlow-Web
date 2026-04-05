@@ -1,10 +1,10 @@
 import { Server as HttpServer } from 'http';
 import { Server, Socket } from 'socket.io';
 import jwt from 'jsonwebtoken';
-import { config } from '../config/index.js';
-import { prisma } from '../config/database.js';
-import { logger } from '../utils/logger.js';
-import { TokenPayload, PresenceUpdate, PresenceStatus } from '../types/index.js';
+import { config } from '../config/index';
+import { prisma } from '../config/database';
+import { logger } from '../utils/logger';
+import { TokenPayload, PresenceUpdate, PresenceStatus } from '../types/index';
 
 // ===========================================
 // Socket Service

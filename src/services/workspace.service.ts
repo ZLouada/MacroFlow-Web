@@ -1,8 +1,8 @@
 import { v4 as uuidv4 } from 'uuid';
 import { Prisma, ProjectStatus, WorkspaceRole as PrismaWorkspaceRole, ActivityAction } from '@prisma/client';
-import { prisma } from '../config/database.js';
-import { NotFoundError, ForbiddenError, ConflictError, BadRequestError } from '../utils/errors.js';
-import { uploadService } from './upload.service.js';
+import { prisma } from '../config/database';
+import { NotFoundError, ForbiddenError, ConflictError, BadRequestError } from '../utils/errors';
+import { uploadService } from './upload.service';
 
 // ===========================================
 // Types

@@ -1,6 +1,6 @@
 import { Prisma, ProjectStatus, ProjectRole, TaskStatus, TaskPriority, ActivityAction } from '@prisma/client';
-import { prisma } from '../config/database.js';
-import { NotFoundError, ForbiddenError, ConflictError } from '../utils/errors.js';
+import { prisma } from '../config/database';
+import { NotFoundError, ForbiddenError, ConflictError } from '../utils/errors';
 
 // ===========================================
 // Types

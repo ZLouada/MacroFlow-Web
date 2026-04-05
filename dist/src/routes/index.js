@@ -4,21 +4,21 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", { value: true });
 const express_1 = require("express");
-const auth_routes_js_1 = __importDefault(require("./auth.routes.js"));
-const user_routes_js_1 = __importDefault(require("./user.routes.js"));
-const workspace_routes_js_1 = __importDefault(require("./workspace.routes.js"));
-const project_routes_js_1 = __importDefault(require("./project.routes.js"));
-const task_routes_js_1 = __importDefault(require("./task.routes.js"));
-const column_routes_js_1 = __importDefault(require("./column.routes.js"));
-const comment_routes_js_1 = __importDefault(require("./comment.routes.js"));
-const label_routes_js_1 = __importDefault(require("./label.routes.js"));
-const dashboard_routes_js_1 = __importDefault(require("./dashboard.routes.js"));
-const notification_routes_js_1 = __importDefault(require("./notification.routes.js"));
-const search_routes_js_1 = __importDefault(require("./search.routes.js"));
-const simulation_routes_js_1 = __importDefault(require("./simulation.routes.js"));
-const database_js_1 = require("../config/database.js");
-const redis_js_1 = require("../config/redis.js");
-const queue_js_1 = require("../jobs/queue.js");
+const auth_routes_1 = __importDefault(require("./auth.routes"));
+const user_routes_1 = __importDefault(require("./user.routes"));
+const workspace_routes_1 = __importDefault(require("./workspace.routes"));
+const project_routes_1 = __importDefault(require("./project.routes"));
+const task_routes_1 = __importDefault(require("./task.routes"));
+const column_routes_1 = __importDefault(require("./column.routes"));
+const comment_routes_1 = __importDefault(require("./comment.routes"));
+const label_routes_1 = __importDefault(require("./label.routes"));
+const dashboard_routes_1 = __importDefault(require("./dashboard.routes"));
+const notification_routes_1 = __importDefault(require("./notification.routes"));
+const search_routes_1 = __importDefault(require("./search.routes"));
+const simulation_routes_1 = __importDefault(require("./simulation.routes"));
+const database_1 = require("../config/database");
+const redis_1 = require("../config/redis");
+const queue_1 = require("../jobs/queue");
 const router = (0, express_1.Router)();
 // ===========================================
 // Health Check Routes
@@ -52,7 +52,7 @@ router.get('/health/detailed', async (req, res) => {
     const dbStart = Date.now();
     try {
         // Simple findFirst query to check database connectivity
-        await database_js_1.prisma.user.findFirst({ take: 1 });
+        await database_1.prisma.user.findFirst({ take: 1 });
         health.services.database = {
             status: 'healthy',
             latency: Date.now() - dbStart,
@@ -68,7 +68,7 @@ router.get('/health/detailed', async (req, res) => {
     // Check Redis
     const redisStart = Date.now();
     try {
-        const redis = (0, redis_js_1.getRedisClient)();
+        const redis = (0, redis_1.getRedisClient)();
         if (redis) {
             await redis.ping();
             health.services.redis = {
@@ -91,7 +91,7 @@ router.get('/health/detailed', async (req, res) => {
     }
     // Check queues
     try {
-        const queues = await (0, queue_js_1.getQueueHealth)();
+        const queues = await (0, queue_1.getQueueHealth)();
         health.services.queues = {
             status: queues.every((q) => q.status === 'healthy') ? 'healthy' : 'degraded',
         };
@@ -113,9 +113,9 @@ router.get('/health/detailed', async (req, res) => {
 router.get('/ready', async (req, res) => {
     try {
         // Check database connection (required)
-        await database_js_1.prisma.user.findFirst({ take: 1 });
+        await database_1.prisma.user.findFirst({ take: 1 });
         // Check Redis if available (optional)
-        const redis = (0, redis_js_1.getRedisClient)();
+        const redis = (0, redis_1.getRedisClient)();
         if (redis) {
             await redis.ping();
         }
@@ -138,29 +138,29 @@ router.get('/live', (req, res) => {
 // ===========================================
 const v1Router = (0, express_1.Router)();
 // Auth routes
-v1Router.use('/auth', auth_routes_js_1.default);
+v1Router.use('/auth', auth_routes_1.default);
 // User routes
-v1Router.use('/users', user_routes_js_1.default);
+v1Router.use('/users', user_routes_1.default);
 // Workspace routes
-v1Router.use('/workspaces', workspace_routes_js_1.default);
+v1Router.use('/workspaces', workspace_routes_1.default);
 // Project routes (both workspace-scoped and direct)
-v1Router.use('/projects', project_routes_js_1.default);
+v1Router.use('/projects', project_routes_1.default);
 // Task routes (both project-scoped and direct)
-v1Router.use('/tasks', task_routes_js_1.default);
+v1Router.use('/tasks', task_routes_1.default);
 // Column routes (both project-scoped and direct)
-v1Router.use('/columns', column_routes_js_1.default);
+v1Router.use('/columns', column_routes_1.default);
 // Comment routes (both task-scoped and direct)
-v1Router.use('/comments', comment_routes_js_1.default);
+v1Router.use('/comments', comment_routes_1.default);
 // Label routes
-v1Router.use('/labels', label_routes_js_1.default);
+v1Router.use('/labels', label_routes_1.default);
 // Dashboard routes
-v1Router.use('/dashboard', dashboard_routes_js_1.default);
+v1Router.use('/dashboard', dashboard_routes_1.default);
 // Notification routes
-v1Router.use('/notifications', notification_routes_js_1.default);
+v1Router.use('/notifications', notification_routes_1.default);
 // Search routes
-v1Router.use('/search', search_routes_js_1.default);
+v1Router.use('/search', search_routes_1.default);
 // Simulation routes (advanced/scenario-based)
-v1Router.use('/simulations', simulation_routes_js_1.default);
+v1Router.use('/simulations', simulation_routes_1.default);
 // Mount v1 routes
 router.use('/api/v1', v1Router);
 // ===========================================

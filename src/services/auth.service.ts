@@ -4,21 +4,21 @@ import crypto from 'crypto';
 import { v4 as uuidv4 } from 'uuid';
 import { authenticator } from 'otplib';
 import QRCode from 'qrcode';
-import { prisma } from '../config/database.js';
-import { config } from '../config/index.js';
+import { prisma } from '../config/database';
+import { config } from '../config/index';
 import {
   BadRequestError,
   UnauthorizedError,
   ConflictError,
   NotFoundError,
-} from '../utils/errors.js';
+} from '../utils/errors';
 import {
   TokenPayload,
   RefreshTokenPayload,
   AuthenticatedUser,
   UserRole,
-} from '../types/index.js';
-import { emailService } from './email.service.js';
+} from '../types/index';
+import { emailService } from './email.service';
 
 const SALT_ROUNDS = 12;
 const ACCESS_TOKEN_EXPIRES = '15m';

@@ -1,6 +1,6 @@
-import { prisma } from '../config/database.js';
+import { prisma } from '../config/database';
 import { Prisma } from '@prisma/client';
-import { NotFoundError, BadRequestError } from '../utils/errors.js';
+import { NotFoundError, BadRequestError } from '../utils/errors';
 
 // ===========================================
 // Column Service

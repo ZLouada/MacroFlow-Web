@@ -44,17 +44,17 @@ const compression_1 = __importDefault(require("compression"));
 const morgan_1 = __importDefault(require("morgan"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
 const path_1 = __importDefault(require("path"));
-const index_js_1 = require("./config/index.js");
-const logger_js_1 = require("./utils/logger.js");
-const error_middleware_js_1 = require("./middleware/error.middleware.js");
-const rateLimit_middleware_js_1 = require("./middleware/rateLimit.middleware.js");
-const index_js_2 = __importDefault(require("./routes/index.js"));
+const index_1 = require("./config/index");
+const logger_1 = require("./utils/logger");
+const error_middleware_1 = require("./middleware/error.middleware");
+const rateLimit_middleware_1 = require("./middleware/rateLimit.middleware");
+const index_2 = __importDefault(require("./routes/index"));
 // Create Express app
 const app = (0, express_1.default)();
 // ===========================================
 // Trust Proxy (for rate limiting behind reverse proxy)
 // ===========================================
-if (index_js_1.config.server.isProduction) {
+if (index_1.config.server.isProduction) {
     app.set('trust proxy', 1);
 }
 // ===========================================
@@ -62,13 +62,13 @@ if (index_js_1.config.server.isProduction) {
 // ===========================================
 // Helmet - Set security headers
 app.use((0, helmet_1.default)({
-    contentSecurityPolicy: index_js_1.config.server.isProduction ? undefined : false,
+    contentSecurityPolicy: index_1.config.server.isProduction ? undefined : false,
     crossOriginEmbedderPolicy: false,
 }));
 // CORS
 app.use((0, cors_1.default)({
-    origin: index_js_1.config.cors.origin.split(',').map(o => o.trim()),
-    credentials: index_js_1.config.cors.credentials,
+    origin: index_1.config.cors.origin.split(',').map(o => o.trim()),
+    credentials: index_1.config.cors.credentials,
     methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'],
     allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'X-Request-ID'],
     exposedHeaders: ['X-Total-Count', 'X-Page', 'X-Per-Page', 'X-Total-Pages'],
@@ -91,14 +91,14 @@ app.use((0, compression_1.default)());
 // Logging
 // ===========================================
 // HTTP request logging
-if (index_js_1.config.server.isDevelopment) {
+if (index_1.config.server.isDevelopment) {
     app.use((0, morgan_1.default)('dev'));
 }
 else {
     app.use((0, morgan_1.default)('combined', {
         stream: {
             write: (message) => {
-                logger_js_1.logger.http(message.trim());
+                logger_1.logger.http(message.trim());
             },
         },
     }));
@@ -114,15 +114,15 @@ app.use((req, res, next) => {
 // ===========================================
 // Rate Limiting
 // ===========================================
-app.use(rateLimit_middleware_js_1.generalRateLimiter);
+app.use(rateLimit_middleware_1.generalRateLimiter);
 // ===========================================
 // API Routes
 // ===========================================
-app.use(index_js_2.default);
+app.use(index_2.default);
 // ===========================================
 // Static Frontend Serving (Production)
 // ===========================================
-if (index_js_1.config.server.isProduction) {
+if (index_1.config.server.isProduction) {
     const clientDistPath = path_1.default.join(__dirname, '../../client/dist');
     // Serve static files from the React app
     app.use(express_1.default.static(clientDistPath));
@@ -141,14 +141,14 @@ if (index_js_1.config.server.isProduction) {
 // Error Handling
 // ===========================================
 // 404 handler (for API routes)
-app.use(error_middleware_js_1.notFoundHandler);
+app.use(error_middleware_1.notFoundHandler);
 // Global error handler
-app.use(error_middleware_js_1.errorHandler);
+app.use(error_middleware_1.errorHandler);
 // ===========================================
 // Graceful Shutdown Helper
 // ===========================================
 const gracefulShutdown = async (signal) => {
-    logger_js_1.logger.info(`Received ${signal}. Starting graceful shutdown...`);
+    logger_1.logger.info(`Received ${signal}. Starting graceful shutdown...`);
     // Close database connections, queues, etc.
     const { prisma } = await Promise.resolve().then(() => __importStar(require('./config/database.js')));
     const { closeRedis } = await Promise.resolve().then(() => __importStar(require('./config/redis.js')));
@@ -160,7 +160,7 @@ const gracefulShutdown = async (signal) => {
         closeQueues(),
         closeWorkers(),
     ]);
-    logger_js_1.logger.info('Graceful shutdown complete');
+    logger_1.logger.info('Graceful shutdown complete');
 };
 exports.gracefulShutdown = gracefulShutdown;
 exports.default = app;

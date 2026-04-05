@@ -1,13 +1,13 @@
 import { Router } from 'express';
-import { columnController } from '../controllers/column.controller.js';
-import { validate, asyncHandler } from '../middleware/error.middleware.js';
-import { authenticate, requireProjectAccess } from '../middleware/auth.middleware.js';
+import { columnController } from '../controllers/column.controller';
+import { validate, asyncHandler } from '../middleware/error.middleware';
+import { authenticate, requireProjectAccess } from '../middleware/auth.middleware';
 import {
   createColumnSchema,
   updateColumnSchema,
   reorderColumnsSchema,
-} from '../validations/column.validation.js';
-import { ProjectRole } from '../types/index.js';
+} from '../validations/column.validation';
+import { ProjectRole } from '../types/index';
 
 const router = Router();
 

@@ -1,15 +1,15 @@
 import { Router } from 'express';
 import multer from 'multer';
-import { userController } from '../controllers/user.controller.js';
-import { validate, asyncHandler } from '../middleware/error.middleware.js';
-import { authenticate, requireRole } from '../middleware/auth.middleware.js';
-import { uploadRateLimiter } from '../middleware/rateLimit.middleware.js';
+import { userController } from '../controllers/user.controller';
+import { validate, asyncHandler } from '../middleware/error.middleware';
+import { authenticate, requireRole } from '../middleware/auth.middleware';
+import { uploadRateLimiter } from '../middleware/rateLimit.middleware';
 import {
   updateProfileSchema,
   updatePreferencesSchema,
   searchUsersSchema,
-} from '../validations/user.validation.js';
-import { UserRole } from '../types/index.js';
+} from '../validations/user.validation';
+import { UserRole } from '../types/index';
 
 const router = Router();
 

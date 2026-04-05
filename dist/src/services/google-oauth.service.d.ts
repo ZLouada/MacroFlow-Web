@@ -3,7 +3,7 @@
  *
  * Handles Google OAuth 2.0 authentication flow
  */
-import { AuthenticatedUser } from '../types/index.js';
+import { AuthenticatedUser } from '../types/index';
 interface GoogleTokenResponse {
     access_token: string;
     expires_in: number;

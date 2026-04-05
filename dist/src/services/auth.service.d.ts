@@ -1,4 +1,4 @@
-import { AuthenticatedUser } from '../types/index.js';
+import { AuthenticatedUser } from '../types/index';
 interface AuthTokens {
     accessToken: string;
     refreshToken: string;
@@ -122,7 +122,7 @@ export declare const authService: {
             notifyTaskCompleted: boolean;
             notifyTaskOverdue: boolean;
             notifyMentions: boolean;
-            dashboardLayout: import("@prisma/client/runtime/library.js").JsonValue | null;
+            dashboardLayout: import("@prisma/client/runtime/library").JsonValue | null;
         } | null;
         createdAt: Date;
     }>;
