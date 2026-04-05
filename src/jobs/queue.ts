@@ -2,12 +2,26 @@ import { Queue, Worker, Job, QueueEvents, ConnectionOptions } from 'bullmq';
 import { config } from '../config/index.js';
 import { logger } from '../utils/logger.js';
 
-// Redis connection options for BullMQ
-export const redisConnection: ConnectionOptions = {
-  host: new URL(config.redis.url).hostname || 'localhost',
-  port: parseInt(new URL(config.redis.url).port) || 6379,
-  password: config.redis.password,
+// Parse Redis URL safely
+const parseRedisUrl = (url: string): ConnectionOptions => {
+  try {
+    const parsed = new URL(url);
+    return {
+      host: parsed.hostname || 'localhost',
+      port: parseInt(parsed.port) || 6379,
+      password: parsed.password || config.redis.password || undefined,
+    };
+  } catch {
+    return {
+      host: 'localhost',
+      port: 6379,
+      password: config.redis.password || undefined,
+    };
+  }
 };
+
+// Redis connection options for BullMQ
+export const redisConnection: ConnectionOptions = parseRedisUrl(config.redis.url);
 
 // Queue names
 export const QUEUE_NAMES = {

@@ -3,7 +3,7 @@ import app, { gracefulShutdown } from './app.js';
 import { config } from './config/index.js';
 import { logger } from './utils/logger.js';
 import { prisma } from './config/database.js';
-import { getRedisClient } from './config/redis.js';
+import { connectRedis } from './config/redis.js';
 import { initializeSocket } from './services/socket.service.js';
 import { startWorkers } from './jobs/workers.js';
 
@@ -25,14 +25,16 @@ const startServer = async () => {
     await prisma.user.findFirst({ take: 1 });
     logger.info('Database connection established');
 
-    // Test Redis connection
-    const redis = getRedisClient();
-    await redis.ping();
-    logger.info('Redis connection established');
-
-    // Start background job workers
-    startWorkers();
-    logger.info('Background workers started');
+    // Try Redis connection (optional - won't fail if not available)
+    const redisConnected = await connectRedis();
+    if (redisConnected) {
+      logger.info('Redis connection established');
+      // Only start workers if Redis is available
+      startWorkers();
+      logger.info('Background workers started');
+    } else {
+      logger.warn('Running without Redis - background jobs disabled');
+    }
 
     // Start HTTP server
     server.listen(config.server.port, () => {
