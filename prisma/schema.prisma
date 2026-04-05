@@ -1,0 +1,534 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mongodb"
+  url      = env("DATABASE_URL")
+}
+
+// ===========================================
+// Users & Authentication
+// ===========================================
+
+model User {
+  id                String    @id @default(auto()) @map("_id") @db.ObjectId
+  email             String    @unique
+  password          String
+  name              String
+  avatar            String?
+  role              UserRole  @default(developer)
+  emailVerified     Boolean   @default(false)
+  twoFactorEnabled  Boolean   @default(false)
+  twoFactorSecret   String?
+  backupCodes       Json      @default("[]")
+  createdAt         DateTime  @default(now())
+  updatedAt         DateTime  @updatedAt
+  deletedAt         DateTime?
+
+  // Relations
+  sessions           Session[]
+  passwordResets     PasswordReset[]
+  emailVerifications EmailVerification[]
+  preferences        UserPreferences?
+  workspaces         WorkspaceMember[]
+  ownedWorkspaces    Workspace[]         @relation("WorkspaceOwner")
+  projects           ProjectMember[]
+  createdProjects    Project[]           @relation("ProjectCreator")
+  assignedTasks      Task[]              @relation("TaskAssignee")
+  createdTasks       Task[]              @relation("TaskCreator")
+  comments           Comment[]
+  commentReactions   CommentReaction[]
+  attachments        Attachment[]
+  activities         Activity[]
+  notifications      Notification[]
+  presence           UserPresence?
+  scenarios          Scenario[]
+
+  @@index([deletedAt])
+}
+
+enum UserRole {
+  admin
+  coo
+  projectManager
+  teamLead
+  developer
+  designer
+  viewer
+}
+
+model Session {
+  id           String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId       String   @db.ObjectId
+  token        String   @unique
+  refreshToken String   @unique
+  expiresAt    DateTime
+  ipAddress    String?
+  userAgent    String?
+  createdAt    DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model PasswordReset {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  token     String   @unique
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+model EmailVerification {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String   @db.ObjectId
+  token     String   @unique
+  expiresAt DateTime
+  verified  Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+}
+
+// ===========================================
+// User Preferences
+// ===========================================
+
+model UserPreferences {
+  id                  String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId              String   @unique @db.ObjectId
+  theme               Theme    @default(system)
+  language            Language @default(en)
+  notifyEmail         Boolean  @default(true)
+  notifyPush          Boolean  @default(true)
+  notifyTaskAssigned  Boolean  @default(true)
+  notifyTaskCompleted Boolean  @default(true)
+  notifyTaskOverdue   Boolean  @default(true)
+  notifyMentions      Boolean  @default(true)
+  dashboardLayout     Json?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+enum Theme {
+  light
+  dark
+  system
+}
+
+enum Language {
+  en
+  fr
+  ar
+}
+
+// ===========================================
+// Workspaces & Projects
+// ===========================================
+
+model Workspace {
+  id         String    @id @default(auto()) @map("_id") @db.ObjectId
+  name       String
+  slug       String    @unique
+  icon       String?
+  color      String?
+  isPersonal Boolean   @default(false)
+  isPremium  Boolean   @default(false)
+  isPrivate  Boolean   @default(false)
+  ownerId    String    @db.ObjectId
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  deletedAt  DateTime?
+
+  owner      User              @relation("WorkspaceOwner", fields: [ownerId], references: [id])
+  members    WorkspaceMember[]
+  projects   Project[]
+  labels     Label[]
+  activities Activity[]
+  scenarios  Scenario[]
+
+  @@index([ownerId])
+  @@index([deletedAt])
+}
+
+model WorkspaceMember {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  workspaceId String        @db.ObjectId
+  userId      String        @db.ObjectId
+  role        WorkspaceRole @default(member)
+  joinedAt    DateTime      @default(now())
+
+  workspace Workspace @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  user      User      @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([workspaceId, userId])
+  @@index([userId])
+}
+
+enum WorkspaceRole {
+  owner
+  admin
+  member
+  guest
+}
+
+model Project {
+  id          String        @id @default(auto()) @map("_id") @db.ObjectId
+  workspaceId String        @db.ObjectId
+  name        String
+  description String?
+  color       String?
+  icon        String?
+  status      ProjectStatus @default(active)
+  startDate   DateTime?
+  endDate     DateTime?
+  createdBy   String        @db.ObjectId
+  createdAt   DateTime      @default(now())
+  updatedAt   DateTime      @updatedAt
+  deletedAt   DateTime?
+
+  workspace  Workspace       @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  creator    User            @relation("ProjectCreator", fields: [createdBy], references: [id])
+  members    ProjectMember[]
+  columns    KanbanColumn[]
+  tasks      Task[]
+  activities Activity[]
+
+  @@index([workspaceId])
+  @@index([createdBy])
+  @@index([status])
+  @@index([deletedAt])
+}
+
+model ProjectMember {
+  id        String      @id @default(auto()) @map("_id") @db.ObjectId
+  projectId String      @db.ObjectId
+  userId    String      @db.ObjectId
+  role      ProjectRole @default(member)
+  joinedAt  DateTime    @default(now())
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([projectId, userId])
+  @@index([userId])
+}
+
+enum ProjectStatus {
+  active
+  archived
+  completed
+}
+
+enum ProjectRole {
+  manager
+  member
+  viewer
+}
+
+// ===========================================
+// Tasks & Kanban
+// ===========================================
+
+model KanbanColumn {
+  id        String     @id @default(auto()) @map("_id") @db.ObjectId
+  projectId String     @db.ObjectId
+  title     String
+  status    TaskStatus @default(todo)
+  color     String?
+  order     Int        @default(0)
+  taskLimit Int?
+
+  project Project @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  tasks   Task[]
+
+  @@index([projectId])
+  @@index([order])
+}
+
+model Task {
+  id             String       @id @default(auto()) @map("_id") @db.ObjectId
+  projectId      String       @db.ObjectId
+  columnId       String       @db.ObjectId
+  title          String
+  description    String?
+  status         TaskStatus   @default(todo)
+  priority       TaskPriority @default(medium)
+  assigneeId     String?      @db.ObjectId
+  order          Int          @default(0)
+  dueDate        DateTime?
+  startDate      DateTime?
+  endDate        DateTime?
+  estimatedHours Float?
+  actualHours    Float?
+  progress       Int          @default(0)
+  isMilestone    Boolean      @default(false)
+  createdBy      String       @db.ObjectId
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  deletedAt      DateTime?
+
+  project      Project          @relation(fields: [projectId], references: [id], onDelete: Cascade)
+  column       KanbanColumn     @relation(fields: [columnId], references: [id])
+  assignee     User?            @relation("TaskAssignee", fields: [assigneeId], references: [id])
+  creator      User             @relation("TaskCreator", fields: [createdBy], references: [id])
+  dependencies TaskDependency[] @relation("TaskDependencies")
+  dependents   TaskDependency[] @relation("DependentTasks")
+  labels       TaskLabel[]
+  attachments  Attachment[]
+  comments     Comment[]
+  activities   Activity[]
+
+  @@index([projectId])
+  @@index([columnId])
+  @@index([assigneeId])
+  @@index([status])
+  @@index([priority])
+  @@index([dueDate])
+  @@index([deletedAt])
+}
+
+enum TaskStatus {
+  todo
+  inProgress
+  review
+  done
+  blocked
+}
+
+enum TaskPriority {
+  low
+  medium
+  high
+  urgent
+}
+
+model TaskDependency {
+  id              String         @id @default(auto()) @map("_id") @db.ObjectId
+  taskId          String         @db.ObjectId
+  dependsOnTaskId String         @db.ObjectId
+  type            DependencyType @default(finishToStart)
+  createdAt       DateTime       @default(now())
+
+  task      Task @relation("TaskDependencies", fields: [taskId], references: [id], onDelete: Cascade)
+  dependsOn Task @relation("DependentTasks", fields: [dependsOnTaskId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, dependsOnTaskId])
+  @@index([dependsOnTaskId])
+}
+
+enum DependencyType {
+  finishToStart
+  startToStart
+  finishToFinish
+  startToFinish
+}
+
+model Label {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  workspaceId String   @db.ObjectId
+  name        String
+  color       String
+  createdAt   DateTime @default(now())
+
+  workspace Workspace   @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  tasks     TaskLabel[]
+
+  @@unique([workspaceId, name])
+}
+
+model TaskLabel {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  taskId    String   @db.ObjectId
+  labelId   String   @db.ObjectId
+  createdAt DateTime @default(now())
+
+  task  Task  @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  label Label @relation(fields: [labelId], references: [id], onDelete: Cascade)
+
+  @@unique([taskId, labelId])
+  @@index([labelId])
+}
+
+model Attachment {
+  id         String   @id @default(auto()) @map("_id") @db.ObjectId
+  taskId     String   @db.ObjectId
+  name       String
+  url        String
+  type       String
+  size       Int
+  uploadedBy String   @db.ObjectId
+  uploadedAt DateTime @default(now())
+
+  task     Task @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  uploader User @relation(fields: [uploadedBy], references: [id])
+
+  @@index([taskId])
+}
+
+model Comment {
+  id        String    @id @default(auto()) @map("_id") @db.ObjectId
+  taskId    String    @db.ObjectId
+  authorId  String    @db.ObjectId
+  content   String
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime?
+
+  task      Task              @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  author    User              @relation(fields: [authorId], references: [id])
+  reactions CommentReaction[]
+
+  @@index([taskId])
+  @@index([authorId])
+}
+
+model CommentReaction {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  commentId String   @db.ObjectId
+  userId    String   @db.ObjectId
+  emoji     String
+  createdAt DateTime @default(now())
+
+  comment Comment @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  user    User    @relation(fields: [userId], references: [id])
+
+  @@unique([commentId, userId, emoji])
+}
+
+// ===========================================
+// Activity & Notifications
+// ===========================================
+
+model Activity {
+  id          String         @id @default(auto()) @map("_id") @db.ObjectId
+  workspaceId String?        @db.ObjectId
+  projectId   String?        @db.ObjectId
+  taskId      String?        @db.ObjectId
+  userId      String         @db.ObjectId
+  action      ActivityAction
+  entityType  EntityType
+  entityId    String
+  metadata    Json?
+  createdAt   DateTime       @default(now())
+
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+  project   Project?   @relation(fields: [projectId], references: [id], onDelete: SetNull)
+  task      Task?      @relation(fields: [taskId], references: [id], onDelete: SetNull)
+  user      User       @relation(fields: [userId], references: [id])
+
+  @@index([workspaceId])
+  @@index([projectId])
+  @@index([taskId])
+  @@index([userId])
+  @@index([createdAt])
+}
+
+enum ActivityAction {
+  created
+  updated
+  deleted
+  moved
+  assigned
+  commented
+}
+
+enum EntityType {
+  task
+  project
+  comment
+  workspace
+}
+
+model Notification {
+  id        String           @id @default(auto()) @map("_id") @db.ObjectId
+  userId    String           @db.ObjectId
+  type      NotificationType
+  title     String
+  message   String
+  read      Boolean          @default(false)
+  data      Json?
+  createdAt DateTime         @default(now())
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([userId])
+  @@index([read])
+  @@index([createdAt])
+}
+
+enum NotificationType {
+  taskAssigned
+  taskCompleted
+  taskOverdue
+  mention
+  commentAdded
+  projectInvited
+  workspaceInvited
+  system
+}
+
+// ===========================================
+// Real-time Presence
+// ===========================================
+
+model UserPresence {
+  id             String         @id @default(auto()) @map("_id") @db.ObjectId
+  visitorId      String         @unique
+  userId         String         @unique @db.ObjectId
+  status         PresenceStatus @default(offline)
+  currentView    String?
+  currentTaskId  String?
+  cursorPosition Json?
+  lastSeen       DateTime       @default(now())
+  color          String
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+}
+
+enum PresenceStatus {
+  online
+  idle
+  away
+  dnd
+  offline
+}
+
+// ===========================================
+// Economic Simulations
+// ===========================================
+
+model Scenario {
+  id             String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId         String   @db.ObjectId
+  workspaceId    String?  @db.ObjectId
+  name           String
+  description    String?
+  fiscalPolicy   Json
+  monetaryPolicy Json
+  externalSector Json
+  indicators     Json?
+  results        Json?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  user      User       @relation(fields: [userId], references: [id], onDelete: Cascade)
+  workspace Workspace? @relation(fields: [workspaceId], references: [id], onDelete: SetNull)
+
+  @@index([userId])
+  @@index([workspaceId])
+}

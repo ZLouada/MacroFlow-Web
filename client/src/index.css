@@ -1,0 +1,761 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* ============================================================================
+       ClickUp-Inspired Color Palette - Light Mode
+       Primary: Vibrant Purple (#7C3AED)
+       Secondary: Soft Pink (#EC4899)
+       Accent: Teal (#14B8A6)
+       Success: Green (#22C55E)
+       Warning: Amber (#F59E0B)
+       Error: Red (#EF4444)
+       ============================================================================ */
+    --background: 0 0% 100%;
+    --foreground: 240 10% 4%;
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 4%;
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 4%;
+    
+    /* Vibrant Purple Primary - ClickUp inspired */
+    --primary: 263 84% 55%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Soft secondary surfaces */
+    --secondary: 263 30% 96%;
+    --secondary-foreground: 263 50% 30%;
+    
+    /* Muted surfaces */
+    --muted: 240 5% 96%;
+    --muted-foreground: 240 4% 46%;
+    
+    /* Purple-tinted accent */
+    --accent: 263 40% 95%;
+    --accent-foreground: 263 60% 40%;
+    
+    /* Error - Bright Red */
+    --destructive: 0 84% 60%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Success - Vibrant Green */
+    --success: 142 71% 45%;
+    --success-foreground: 0 0% 100%;
+    
+    /* Warning - Amber */
+    --warning: 38 92% 50%;
+    --warning-foreground: 38 100% 10%;
+    
+    /* Borders and inputs */
+    --border: 240 6% 90%;
+    --input: 240 6% 90%;
+    --ring: 263 84% 55%;
+    --radius: 0.75rem;
+
+    /* Kanban colors - Vibrant palette */
+    --kanban-todo: 240 5% 65%;
+    --kanban-in-progress: 263 84% 55%;
+    --kanban-review: 38 92% 50%;
+    --kanban-done: 142 71% 45%;
+    
+    /* Gradient stops for advanced effects */
+    --gradient-start: 263 90% 60%;
+    --gradient-mid: 280 80% 55%;
+    --gradient-end: 320 75% 55%;
+    
+    /* ClickUp-style highlight colors */
+    --highlight-purple: 263 84% 55%;
+    --highlight-pink: 330 80% 60%;
+    --highlight-blue: 217 91% 60%;
+    --highlight-teal: 174 72% 46%;
+  }
+
+  .dark {
+    /* ============================================================================
+       ClickUp-Inspired Color Palette - Dark Mode
+       Rich, deep backgrounds with vibrant accents
+       ============================================================================ */
+    --background: 240 10% 4%;
+    --foreground: 0 0% 95%;
+    --card: 240 10% 7%;
+    --card-foreground: 0 0% 95%;
+    --popover: 240 10% 7%;
+    --popover-foreground: 0 0% 95%;
+    
+    /* Vibrant Purple - slightly brighter for dark mode */
+    --primary: 263 84% 60%;
+    --primary-foreground: 0 0% 100%;
+    
+    /* Dark secondary surfaces */
+    --secondary: 240 10% 12%;
+    --secondary-foreground: 0 0% 90%;
+    
+    /* Dark muted surfaces */
+    --muted: 240 6% 12%;
+    --muted-foreground: 240 5% 55%;
+    
+    /* Dark accent surfaces */
+    --accent: 263 30% 15%;
+    --accent-foreground: 263 80% 85%;
+    
+    /* Error for dark mode */
+    --destructive: 0 72% 51%;
+    --destructive-foreground: 0 0% 100%;
+    
+    /* Success adjusted for dark */
+    --success: 142 60% 40%;
+    --success-foreground: 0 0% 100%;
+    
+    /* Amber adjusted for dark */
+    --warning: 38 85% 45%;
+    --warning-foreground: 0 0% 100%;
+    
+    /* Dark borders and inputs */
+    --border: 240 6% 18%;
+    --input: 240 6% 18%;
+    --ring: 263 84% 60%;
+
+    /* Dark Kanban colors */
+    --kanban-todo: 240 5% 45%;
+    --kanban-in-progress: 263 80% 55%;
+    --kanban-review: 38 80% 45%;
+    --kanban-done: 142 55% 40%;
+    
+    /* Dark gradient stops */
+    --gradient-start: 263 85% 55%;
+    --gradient-mid: 280 70% 50%;
+    --gradient-end: 320 65% 50%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: 'rlig' 1, 'calt' 1;
+  }
+
+  /* RTL Support */
+  html[dir='rtl'] {
+    font-family: 'Noto Sans Arabic', 'Inter', system-ui, sans-serif;
+  }
+
+  html[dir='ltr'] {
+    font-family: 'Inter', system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+  }
+
+  /* Smooth scrolling */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  /* Selection styling */
+  ::selection {
+    background-color: hsl(var(--primary) / 0.2);
+    color: inherit;
+  }
+}
+
+@layer utilities {
+  /* Scrollbar styling */
+  .scrollbar-thin {
+    scrollbar-width: thin;
+    scrollbar-color: hsl(var(--muted-foreground) / 0.3) transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: hsl(var(--muted-foreground) / 0.3);
+    border-radius: 3px;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar-thumb:hover {
+    background: hsl(var(--muted-foreground) / 0.5);
+  }
+
+  /* Hide scrollbar but keep functionality */
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+
+  /* Text utilities */
+  .text-start {
+    text-align: start;
+  }
+
+  .text-end {
+    text-align: end;
+  }
+
+  /* Focus ring */
+  .focus-ring {
+    @apply focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background;
+  }
+}
+
+/* ============================================================================
+   Animation Keyframes
+   ============================================================================ */
+
+@keyframes shimmer {
+  0% {
+    transform: translateX(-100%);
+  }
+  100% {
+    transform: translateX(100%);
+  }
+}
+
+@keyframes shimmer-bg {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+@keyframes pulse-success {
+  0%, 100% {
+    background-color: hsl(var(--success) / 0.1);
+  }
+  50% {
+    background-color: hsl(var(--success) / 0.2);
+  }
+}
+
+@keyframes float {
+  0%, 100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-10px);
+  }
+}
+
+@keyframes presence-rotate {
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+@keyframes presence-pulse {
+  0%, 100% {
+    box-shadow: 
+      0 0 0 2px hsl(var(--primary) / 0.3),
+      0 0 8px 2px hsl(var(--primary) / 0.2);
+  }
+  50% {
+    box-shadow: 
+      0 0 0 4px hsl(var(--primary) / 0.2),
+      0 0 16px 4px hsl(var(--primary) / 0.15);
+  }
+}
+
+@keyframes gradient-shift {
+  0% {
+    background-position: 0% 50%;
+  }
+  50% {
+    background-position: 100% 50%;
+  }
+  100% {
+    background-position: 0% 50%;
+  }
+}
+
+@keyframes slide-up {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes voice-bar {
+  0%, 100% {
+    height: 20%;
+  }
+  50% {
+    height: 100%;
+  }
+}
+
+@keyframes glow-pulse {
+  0%, 100% {
+    opacity: 0.5;
+  }
+  50% {
+    opacity: 1;
+  }
+}
+
+/* ============================================================================
+   Skeleton & Loading States
+   ============================================================================ */
+
+.skeleton {
+  position: relative;
+  overflow: hidden;
+  background: hsl(var(--muted));
+  border-radius: var(--radius);
+}
+
+.skeleton::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  transform: translateX(-100%);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    hsl(var(--background) / 0.4),
+    transparent
+  );
+  animation: shimmer 2s infinite;
+}
+
+.shimmer {
+  position: relative;
+  overflow: hidden;
+  background: linear-gradient(
+    90deg,
+    hsl(var(--muted)),
+    hsl(var(--muted) / 0.7),
+    hsl(var(--muted))
+  );
+  background-size: 200% 100%;
+  animation: shimmer-bg 1.5s ease-in-out infinite;
+}
+
+.optimistic-update {
+  animation: pulse-success 0.5s ease-out;
+}
+
+/* ============================================================================
+   Glassmorphism Styles - ClickUp Inspired
+   ============================================================================ */
+
+.glass {
+  background: hsl(var(--card) / 0.8);
+  backdrop-filter: blur(12px);
+  -webkit-backdrop-filter: blur(12px);
+  border: 1px solid hsl(var(--border) / 0.5);
+  box-shadow: 
+    0 4px 24px hsl(var(--foreground) / 0.05),
+    inset 0 1px 0 hsl(0 0% 100% / 0.1);
+}
+
+.glass-strong {
+  background: hsl(var(--card) / 0.9);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid hsl(var(--border) / 0.6);
+  box-shadow: 
+    0 8px 32px hsl(var(--foreground) / 0.08),
+    0 2px 8px hsl(var(--foreground) / 0.04),
+    inset 0 1px 0 hsl(0 0% 100% / 0.15);
+}
+
+.glass-subtle {
+  background: hsl(var(--card) / 0.6);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border: 1px solid hsl(var(--border) / 0.3);
+}
+
+.glass-primary {
+  background: hsl(var(--primary) / 0.1);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid hsl(var(--primary) / 0.2);
+  box-shadow: 
+    0 4px 16px hsl(var(--primary) / 0.1),
+    inset 0 1px 0 hsl(var(--primary) / 0.1);
+}
+
+.dark .glass {
+  background: hsl(var(--card) / 0.7);
+  border-color: hsl(var(--border) / 0.4);
+  box-shadow: 
+    0 4px 24px hsl(0 0% 0% / 0.3),
+    inset 0 1px 0 hsl(0 0% 100% / 0.05);
+}
+
+.dark .glass-strong {
+  background: hsl(var(--card) / 0.85);
+  border-color: hsl(var(--border) / 0.5);
+  box-shadow: 
+    0 8px 32px hsl(0 0% 0% / 0.4),
+    inset 0 1px 0 hsl(0 0% 100% / 0.08);
+}
+
+/* ============================================================================
+   Bento Grid Layout - Modern Dashboard
+   ============================================================================ */
+
+.bento-grid {
+  display: grid;
+  gap: 1rem;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+}
+
+@media (min-width: 768px) {
+  .bento-grid {
+    grid-template-columns: repeat(4, 1fr);
+    grid-auto-rows: minmax(120px, auto);
+  }
+  
+  .bento-item-sm { grid-column: span 1; grid-row: span 1; }
+  .bento-item-md { grid-column: span 2; grid-row: span 1; }
+  .bento-item-lg { grid-column: span 2; grid-row: span 2; }
+  .bento-item-wide { grid-column: span 3; grid-row: span 1; }
+  .bento-item-tall { grid-column: span 1; grid-row: span 2; }
+  .bento-item-full { grid-column: span 4; grid-row: span 1; }
+}
+
+.bento-card {
+  @apply rounded-2xl p-5 transition-all duration-300;
+  @apply bg-card border border-border/50;
+  @apply hover:shadow-lg hover:shadow-primary/5 hover:border-border;
+}
+
+/* ============================================================================
+   Presence Indicators (Real-time)
+   ============================================================================ */
+
+.presence-ring {
+  position: relative;
+}
+
+.presence-ring::after {
+  content: '';
+  position: absolute;
+  inset: -3px;
+  border-radius: 50%;
+  border: 2px solid transparent;
+  background: conic-gradient(
+    from 0deg,
+    hsl(var(--primary)),
+    hsl(var(--primary) / 0.5),
+    hsl(var(--primary))
+  ) border-box;
+  -webkit-mask: 
+    linear-gradient(#fff 0 0) padding-box, 
+    linear-gradient(#fff 0 0);
+  mask: 
+    linear-gradient(#fff 0 0) padding-box, 
+    linear-gradient(#fff 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  animation: presence-rotate 2s linear infinite;
+}
+
+.presence-glow {
+  animation: presence-pulse 2s ease-in-out infinite;
+}
+
+/* ============================================================================
+   Empty State Animations
+   ============================================================================ */
+
+.empty-state-float {
+  animation: float 3s ease-in-out infinite;
+}
+
+.empty-state-pulse {
+  animation: glow-pulse 2s ease-in-out infinite;
+}
+
+.empty-state-gradient {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--gradient-start) / 0.15),
+    hsl(var(--gradient-mid) / 0.08),
+    hsl(var(--gradient-end) / 0.12)
+  );
+  background-size: 200% 200%;
+  animation: gradient-shift 5s ease infinite;
+}
+
+/* ============================================================================
+   Motion & Interaction Utilities
+   ============================================================================ */
+
+.motion-safe {
+  @media (prefers-reduced-motion: no-preference) {
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}
+
+.motion-spring {
+  transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.hover-lift {
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.hover-lift:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 20px -4px hsl(var(--foreground) / 0.1);
+}
+
+.hover-glow:hover {
+  box-shadow: 
+    0 0 0 1px hsl(var(--primary) / 0.2),
+    0 0 24px -4px hsl(var(--primary) / 0.25);
+}
+
+.hover-scale {
+  transition: transform 0.2s ease;
+}
+
+.hover-scale:hover {
+  transform: scale(1.02);
+}
+
+/* ============================================================================
+   Workspace Switcher Styles
+   ============================================================================ */
+
+.workspace-item {
+  @apply relative flex items-center gap-3 px-3 py-2.5 rounded-xl;
+  @apply transition-all duration-200;
+  @apply hover:bg-muted;
+}
+
+.workspace-item.active {
+  @apply bg-primary/10;
+}
+
+.workspace-item.active::before {
+  content: '';
+  position: absolute;
+  inset-inline-start: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 3px;
+  height: 60%;
+  border-radius: 0 4px 4px 0;
+  background: hsl(var(--primary));
+}
+
+/* ============================================================================
+   Offline Indicator
+   ============================================================================ */
+
+.offline-indicator {
+  @apply fixed bottom-4 end-4 z-50;
+  @apply px-4 py-2.5 rounded-full;
+  @apply bg-warning text-warning-foreground;
+  @apply flex items-center gap-2;
+  @apply shadow-lg shadow-warning/20;
+  animation: slide-up 0.3s ease-out;
+}
+
+/* ============================================================================
+   Voice Recording Animation
+   ============================================================================ */
+
+.voice-wave {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  height: 20px;
+}
+
+.voice-wave span {
+  display: block;
+  width: 3px;
+  height: 100%;
+  background: currentColor;
+  border-radius: 3px;
+  animation: voice-bar 0.8s ease-in-out infinite;
+}
+
+.voice-wave span:nth-child(1) { animation-delay: 0s; }
+.voice-wave span:nth-child(2) { animation-delay: 0.1s; }
+.voice-wave span:nth-child(3) { animation-delay: 0.2s; }
+.voice-wave span:nth-child(4) { animation-delay: 0.3s; }
+.voice-wave span:nth-child(5) { animation-delay: 0.4s; }
+
+/* ============================================================================
+   Gradient Utilities - ClickUp Style
+   ============================================================================ */
+
+.gradient-primary {
+  background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)));
+}
+
+.gradient-primary-subtle {
+  background: linear-gradient(135deg, hsl(var(--gradient-start) / 0.1), hsl(var(--gradient-end) / 0.15));
+}
+
+.gradient-text {
+  background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)));
+  -webkit-background-clip: text;
+  background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.gradient-border {
+  position: relative;
+  border: 1px solid transparent;
+  background-clip: padding-box;
+}
+
+.gradient-border::before {
+  content: '';
+  position: absolute;
+  inset: -1px;
+  border-radius: inherit;
+  background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)));
+  z-index: -1;
+  mask: linear-gradient(#fff 0 0) content-box, linear-gradient(#fff 0 0);
+  mask-composite: exclude;
+  -webkit-mask-composite: xor;
+  padding: 1px;
+}
+
+/* Glow effects */
+.glow {
+  box-shadow: 
+    0 0 20px hsl(var(--primary) / 0.3),
+    0 0 40px hsl(var(--primary) / 0.15);
+}
+
+.glow-sm {
+  box-shadow: 
+    0 0 10px hsl(var(--primary) / 0.2),
+    0 0 20px hsl(var(--primary) / 0.1);
+}
+
+/* ============================================================================
+   Badge Styles
+   ============================================================================ */
+
+.badge-success {
+  @apply bg-success/10 text-success border border-success/20 px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-warning {
+  @apply bg-warning/10 text-warning border border-warning/20 px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-error {
+  @apply bg-destructive/10 text-destructive border border-destructive/20 px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-primary {
+  @apply bg-primary/10 text-primary border border-primary/20 px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+.badge-muted {
+  @apply bg-muted text-muted-foreground border border-border px-2 py-0.5 rounded-full text-xs font-medium;
+}
+
+/* ============================================================================
+   Focus States
+   ============================================================================ */
+
+.focus-primary:focus,
+.focus-primary:focus-visible {
+  outline: none;
+  box-shadow: 
+    0 0 0 2px hsl(var(--background)),
+    0 0 0 4px hsl(var(--primary) / 0.5);
+}
+
+/* ============================================================================
+   Button Enhancements
+   ============================================================================ */
+
+.btn-gradient {
+  @apply relative overflow-hidden;
+  background: linear-gradient(135deg, hsl(var(--gradient-start)), hsl(var(--gradient-end)));
+}
+
+.btn-gradient::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(135deg, hsl(var(--gradient-end)), hsl(var(--gradient-start)));
+  opacity: 0;
+  transition: opacity 0.3s ease;
+}
+
+.btn-gradient:hover::before {
+  opacity: 1;
+}
+
+.btn-gradient > * {
+  position: relative;
+  z-index: 1;
+}
+
+/* ============================================================================
+   Card Enhancements
+   ============================================================================ */
+
+.card-interactive {
+  @apply transition-all duration-200 cursor-pointer;
+  @apply hover:shadow-lg hover:shadow-primary/5 hover:-translate-y-0.5;
+  @apply active:translate-y-0 active:shadow-md;
+}
+
+.card-highlight {
+  @apply border-l-4 border-l-primary;
+}
+
+/* ============================================================================
+   Input Enhancements
+   ============================================================================ */
+
+.input-modern {
+  @apply w-full px-4 py-3 rounded-xl;
+  @apply border border-input bg-background;
+  @apply focus:outline-none focus:border-primary focus:ring-2 focus:ring-primary/20;
+  @apply transition-all duration-200;
+  @apply placeholder:text-muted-foreground/60;
+}
+
+.input-with-icon {
+  @apply pl-10;
+}
+
+/* ============================================================================
+   RTL-aware utilities
+   ============================================================================ */
+
+.ms-auto { margin-inline-start: auto; }
+.me-auto { margin-inline-end: auto; }
+.ps-4 { padding-inline-start: 1rem; }
+.pe-4 { padding-inline-end: 1rem; }
+.border-s { border-inline-start-width: 1px; }
+.border-e { border-inline-end-width: 1px; }
+.start-0 { inset-inline-start: 0; }
+.end-0 { inset-inline-end: 0; }
+.start-4 { inset-inline-start: 1rem; }
+.end-4 { inset-inline-end: 1rem; }
