@@ -62,13 +62,17 @@ const startServer = async () => {
         // Test database connection (MongoDB)
         await database_js_1.prisma.user.findFirst({ take: 1 });
         logger_js_1.logger.info('Database connection established');
-        // Test Redis connection
-        const redis = (0, redis_js_1.getRedisClient)();
-        await redis.ping();
-        logger_js_1.logger.info('Redis connection established');
-        // Start background job workers
-        (0, workers_js_1.startWorkers)();
-        logger_js_1.logger.info('Background workers started');
+        // Try Redis connection (optional - won't fail if not available)
+        const redisConnected = await (0, redis_js_1.connectRedis)();
+        if (redisConnected) {
+            logger_js_1.logger.info('Redis connection established');
+            // Only start workers if Redis is available
+            (0, workers_js_1.startWorkers)();
+            logger_js_1.logger.info('Background workers started');
+        }
+        else {
+            logger_js_1.logger.warn('Running without Redis - background jobs disabled');
+        }
         // Start HTTP server
         server.listen(index_js_1.config.server.port, () => {
             logger_js_1.logger.info(`Server running on port ${index_js_1.config.server.port}`);

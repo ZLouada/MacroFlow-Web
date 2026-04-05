@@ -69,11 +69,18 @@ router.get('/health/detailed', async (req, res) => {
     const redisStart = Date.now();
     try {
         const redis = (0, redis_js_1.getRedisClient)();
-        await redis.ping();
-        health.services.redis = {
-            status: 'healthy',
-            latency: Date.now() - redisStart,
-        };
+        if (redis) {
+            await redis.ping();
+            health.services.redis = {
+                status: 'healthy',
+                latency: Date.now() - redisStart,
+            };
+        }
+        else {
+            health.services.redis = {
+                status: 'unavailable',
+            };
+        }
     }
     catch (error) {
         health.status = 'degraded';
@@ -105,10 +112,13 @@ router.get('/health/detailed', async (req, res) => {
  */
 router.get('/ready', async (req, res) => {
     try {
-        await Promise.all([
-            database_js_1.prisma.user.findFirst({ take: 1 }),
-            (0, redis_js_1.getRedisClient)().ping(),
-        ]);
+        // Check database connection (required)
+        await database_js_1.prisma.user.findFirst({ take: 1 });
+        // Check Redis if available (optional)
+        const redis = (0, redis_js_1.getRedisClient)();
+        if (redis) {
+            await redis.ping();
+        }
         res.json({ status: 'ready' });
     }
     catch {

@@ -25,7 +25,7 @@ const envSchema = zod_1.z.object({
     // Google OAuth
     GOOGLE_CLIENT_ID: zod_1.z.string().optional(),
     GOOGLE_CLIENT_SECRET: zod_1.z.string().optional(),
-    GOOGLE_CALLBACK_URL: zod_1.z.string().default('/api/v1/auth/google/callback'),
+    GOOGLE_CALLBACK_URL: zod_1.z.string().default('http://localhost:3000/api/v1/auth/google/callback'),
     // S3
     S3_BUCKET: zod_1.z.string().optional(),
     S3_REGION: zod_1.z.string().default('us-east-1'),

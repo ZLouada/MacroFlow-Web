@@ -219,11 +219,13 @@ export const notificationService = {
   async getNotificationPreferences(userId: string): Promise<NotificationPreferences> {
     try {
       const redis = getRedisClient();
-      const key = `notification:preferences:${userId}`;
-      const cached = await redis.get(key);
+      if (redis) {
+        const key = `notification:preferences:${userId}`;
+        const cached = await redis.get(key);
 
-      if (cached) {
-        return JSON.parse(cached);
+        if (cached) {
+          return JSON.parse(cached);
+        }
       }
     } catch {
       // Redis not available
@@ -254,8 +256,10 @@ export const notificationService = {
 
     try {
       const redis = getRedisClient();
-      const key = `notification:preferences:${userId}`;
-      await redis.set(key, JSON.stringify(updated));
+      if (redis) {
+        const key = `notification:preferences:${userId}`;
+        await redis.set(key, JSON.stringify(updated));
+      }
     } catch {
       // Redis not available
     }
@@ -267,6 +271,8 @@ export const notificationService = {
   async subscribeToPushNotifications(userId: string, subscription: PushSubscription): Promise<void> {
     try {
       const redis = getRedisClient();
+      if (!redis) return;
+      
       const key = `push:subscriptions:${userId}`;
       
       // Get existing subscriptions
@@ -288,6 +294,8 @@ export const notificationService = {
   async unsubscribeFromPushNotifications(userId: string, endpoint: string): Promise<void> {
     try {
       const redis = getRedisClient();
+      if (!redis) return;
+      
       const key = `push:subscriptions:${userId}`;
       
       const existing = await redis.get(key);

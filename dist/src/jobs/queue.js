@@ -4,12 +4,26 @@ exports.getQueueHealth = exports.closeQueues = exports.addAnalyticsJob = exports
 const bullmq_1 = require("bullmq");
 const index_js_1 = require("../config/index.js");
 const logger_js_1 = require("../utils/logger.js");
-// Redis connection options for BullMQ
-exports.redisConnection = {
-    host: new URL(index_js_1.config.redis.url).hostname || 'localhost',
-    port: parseInt(new URL(index_js_1.config.redis.url).port) || 6379,
-    password: index_js_1.config.redis.password,
+// Parse Redis URL safely
+const parseRedisUrl = (url) => {
+    try {
+        const parsed = new URL(url);
+        return {
+            host: parsed.hostname || 'localhost',
+            port: parseInt(parsed.port) || 6379,
+            password: parsed.password || index_js_1.config.redis.password || undefined,
+        };
+    }
+    catch {
+        return {
+            host: 'localhost',
+            port: 6379,
+            password: index_js_1.config.redis.password || undefined,
+        };
+    }
 };
+// Redis connection options for BullMQ
+exports.redisConnection = parseRedisUrl(index_js_1.config.redis.url);
 // Queue names
 exports.QUEUE_NAMES = {
     EMAIL: 'email-queue',

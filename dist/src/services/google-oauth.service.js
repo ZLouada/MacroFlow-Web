@@ -64,7 +64,7 @@ exports.googleOAuthService = {
         const baseUrl = 'https://accounts.google.com/o/oauth2/v2/auth';
         const params = new URLSearchParams({
             client_id: index_js_1.config.google.clientId,
-            redirect_uri: `${index_js_1.config.frontend.url}${index_js_1.config.google.callbackUrl}`,
+            redirect_uri: index_js_1.config.google.callbackUrl,
             response_type: 'code',
             scope: 'openid email profile',
             access_type: 'offline',
@@ -90,7 +90,7 @@ exports.googleOAuthService = {
                 client_secret: index_js_1.config.google.clientSecret,
                 code,
                 grant_type: 'authorization_code',
-                redirect_uri: `${index_js_1.config.frontend.url}${index_js_1.config.google.callbackUrl}`,
+                redirect_uri: index_js_1.config.google.callbackUrl,
             }),
         });
         if (!response.ok) {

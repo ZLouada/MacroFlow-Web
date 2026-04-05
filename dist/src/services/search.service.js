@@ -366,6 +366,8 @@ exports.searchService = {
             return;
         try {
             const redis = (0, redis_1.getRedisClient)();
+            if (!redis)
+                return;
             const key = `search:recent:${userId}`;
             // Get existing searches
             const existing = await redis.lrange(key, 0, -1);
@@ -389,6 +391,8 @@ exports.searchService = {
         const { limit = 10 } = params;
         try {
             const redis = (0, redis_1.getRedisClient)();
+            if (!redis)
+                return [];
             const key = `search:recent:${userId}`;
             const searches = await redis.lrange(key, 0, limit - 1);
             return searches.map((query, index) => ({
@@ -404,6 +408,8 @@ exports.searchService = {
     async clearRecentSearches(userId) {
         try {
             const redis = (0, redis_1.getRedisClient)();
+            if (!redis)
+                return;
             const key = `search:recent:${userId}`;
             await redis.del(key);
         }
@@ -424,11 +430,13 @@ exports.searchService = {
         };
         try {
             const redis = (0, redis_1.getRedisClient)();
-            const key = `search:saved:${userId}`;
-            const existing = await redis.get(key);
-            const searches = existing ? JSON.parse(existing) : [];
-            searches.push(savedSearch);
-            await redis.set(key, JSON.stringify(searches));
+            if (redis) {
+                const key = `search:saved:${userId}`;
+                const existing = await redis.get(key);
+                const searches = existing ? JSON.parse(existing) : [];
+                searches.push(savedSearch);
+                await redis.set(key, JSON.stringify(searches));
+            }
         }
         catch {
             // Redis not available - could store in database instead
@@ -439,6 +447,8 @@ exports.searchService = {
     async getSavedSearches(userId) {
         try {
             const redis = (0, redis_1.getRedisClient)();
+            if (!redis)
+                return [];
             const key = `search:saved:${userId}`;
             const data = await redis.get(key);
             return data ? JSON.parse(data) : [];
@@ -451,6 +461,8 @@ exports.searchService = {
     async deleteSavedSearch(userId, searchId) {
         try {
             const redis = (0, redis_1.getRedisClient)();
+            if (!redis)
+                return;
             const key = `search:saved:${userId}`;
             const existing = await redis.get(key);
             if (existing) {
