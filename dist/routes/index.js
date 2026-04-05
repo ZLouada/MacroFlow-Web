@@ -48,10 +48,11 @@ router.get('/health/detailed', async (req, res) => {
         services: {},
         memory: process.memoryUsage(),
     };
-    // Check database
+    // Check database (MongoDB)
     const dbStart = Date.now();
     try {
-        await database_js_1.prisma.$queryRaw `SELECT 1`;
+        // Simple findFirst query to check database connectivity
+        await database_js_1.prisma.user.findFirst({ take: 1 });
         health.services.database = {
             status: 'healthy',
             latency: Date.now() - dbStart,
@@ -105,7 +106,7 @@ router.get('/health/detailed', async (req, res) => {
 router.get('/ready', async (req, res) => {
     try {
         await Promise.all([
-            database_js_1.prisma.$queryRaw `SELECT 1`,
+            database_js_1.prisma.user.findFirst({ take: 1 }),
             (0, redis_js_1.getRedisClient)().ping(),
         ]);
         res.json({ status: 'ready' });
@@ -148,7 +149,7 @@ v1Router.use('/dashboard', dashboard_routes_js_1.default);
 v1Router.use('/notifications', notification_routes_js_1.default);
 // Search routes
 v1Router.use('/search', search_routes_js_1.default);
-// Simulation routes
+// Simulation routes (advanced/scenario-based)
 v1Router.use('/simulations', simulation_routes_js_1.default);
 // Mount v1 routes
 router.use('/api/v1', v1Router);

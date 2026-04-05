@@ -66,5 +66,15 @@ export declare const commentController: {
      * DELETE /api/v1/comments/:commentId/resolve
      */
     unresolve(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void>;
+    /**
+     * Upload attachment to comment
+     * POST /api/v1/comments/:commentId/attachments
+     */
+    uploadAttachment(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void>;
+    /**
+     * Remove attachment from comment
+     * DELETE /api/v1/comments/:commentId/attachments/:attachmentId
+     */
+    removeAttachment(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void>;
 };
 //# sourceMappingURL=comment.controller.d.ts.map

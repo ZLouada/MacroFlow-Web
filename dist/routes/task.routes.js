@@ -17,7 +17,7 @@ router.use(auth_middleware_js_1.authenticate);
  * @desc    Bulk update tasks
  * @access  Private
  */
-router.patch('/bulk', (0, error_middleware_js_1.validate)(task_validation_js_1.bulkUpdateTasksSchema), (0, error_middleware_js_1.asyncHandler)(task_controller_js_1.taskController.bulkUpdate));
+router.patch('/bulk', (0, error_middleware_js_1.validate)({ body: task_validation_js_1.bulkUpdateTasksSchema }), (0, error_middleware_js_1.asyncHandler)(task_controller_js_1.taskController.bulkUpdate));
 /**
  * @route   DELETE /api/v1/tasks/bulk
  * @desc    Bulk delete tasks
@@ -32,13 +32,13 @@ router.delete('/bulk', (0, error_middleware_js_1.asyncHandler)(task_controller_j
  * @desc    List tasks in project with filters
  * @access  Private (Project Member)
  */
-router.get('/projects/:projectId/tasks', (0, auth_middleware_js_1.requireProjectAccess)(), (0, error_middleware_js_1.validate)(task_validation_js_1.listTasksQuerySchema), (0, error_middleware_js_1.asyncHandler)(task_controller_js_1.taskController.getByProject));
+router.get('/projects/:projectId/tasks', (0, auth_middleware_js_1.requireProjectAccess)(), (0, error_middleware_js_1.validate)({ query: task_validation_js_1.listTasksQuerySchema }), (0, error_middleware_js_1.asyncHandler)(task_controller_js_1.taskController.getByProject));
 /**
  * @route   POST /api/v1/projects/:projectId/tasks
  * @desc    Create a new task
  * @access  Private (Project Member)
  */
-router.post('/projects/:projectId/tasks', (0, auth_middleware_js_1.requireProjectAccess)([index_js_1.ProjectRole.MANAGER, index_js_1.ProjectRole.MEMBER]), (0, error_middleware_js_1.validate)(task_validation_js_1.createTaskSchema), (0, error_middleware_js_1.asyncHandler)(task_controller_js_1.taskController.create));
+router.post('/projects/:projectId/tasks', (0, auth_middleware_js_1.requireProjectAccess)(index_js_1.ProjectRole.MANAGER, index_js_1.ProjectRole.MEMBER), (0, error_middleware_js_1.validate)({ body: task_validation_js_1.createTaskSchema }), (0, error_middleware_js_1.asyncHandler)(task_controller_js_1.taskController.create));
 // ===========================================
 // Individual Task Operations
 // ===========================================
@@ -53,7 +53,7 @@ router.get('/:taskId', (0, error_middleware_js_1.asyncHandler)(task_controller_j
  * @desc    Update task
  * @access  Private (Project Member)
  */
-router.patch('/:taskId', (0, error_middleware_js_1.validate)(task_validation_js_1.updateTaskSchema), (0, error_middleware_js_1.asyncHandler)(task_controller_js_1.taskController.update));
+router.patch('/:taskId', (0, error_middleware_js_1.validate)({ body: task_validation_js_1.updateTaskSchema }), (0, error_middleware_js_1.asyncHandler)(task_controller_js_1.taskController.update));
 /**
  * @route   DELETE /api/v1/tasks/:taskId
  * @desc    Delete task
@@ -65,7 +65,7 @@ router.delete('/:taskId', (0, error_middleware_js_1.asyncHandler)(task_controlle
  * @desc    Move task to different column/position
  * @access  Private (Project Member)
  */
-router.post('/:taskId/move', (0, error_middleware_js_1.validate)(task_validation_js_1.moveTaskSchema), (0, error_middleware_js_1.asyncHandler)(task_controller_js_1.taskController.move));
+router.post('/:taskId/move', (0, error_middleware_js_1.validate)({ body: task_validation_js_1.moveTaskSchema }), (0, error_middleware_js_1.asyncHandler)(task_controller_js_1.taskController.move));
 /**
  * @route   POST /api/v1/tasks/:taskId/reorder
  * @desc    Reorder task within column
@@ -137,7 +137,7 @@ router.get('/:taskId/subtasks', (0, error_middleware_js_1.asyncHandler)(task_con
  * @desc    Create subtask
  * @access  Private (Project Member)
  */
-router.post('/:taskId/subtasks', (0, error_middleware_js_1.validate)(task_validation_js_1.createTaskSchema), (0, error_middleware_js_1.asyncHandler)(task_controller_js_1.taskController.createSubtask));
+router.post('/:taskId/subtasks', (0, error_middleware_js_1.validate)({ body: task_validation_js_1.createTaskSchema }), (0, error_middleware_js_1.asyncHandler)(task_controller_js_1.taskController.createSubtask));
 // ===========================================
 // Task Activity, Attachments & Comments
 // ===========================================

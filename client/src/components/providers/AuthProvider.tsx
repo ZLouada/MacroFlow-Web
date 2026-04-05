@@ -57,11 +57,13 @@ interface AuthContextType extends AuthState {
   resetPassword: (email: string) => Promise<boolean>;
   updatePassword: (oldPassword: string, newPassword: string) => Promise<boolean>;
   enableTwoFactor: () => Promise<{ secret: string; qrCode: string }>;
+  verifyAndActivateTwoFactor: (code: string) => Promise<string[]>;
   disableTwoFactor: (code: string) => Promise<boolean>;
   hasRole: (roles: UserRole | UserRole[]) => boolean;
   hasPermission: (permission: string) => boolean;
   clearError: () => void;
   resendVerificationEmail: () => Promise<boolean>;
+  setAuthFromOAuth: (token: string, expiresIn: number) => Promise<void>;
 }
 
 // ============================================================================
@@ -447,6 +449,60 @@ export function AuthProvider({ children }: AuthProviderProps) {
     }
   }, []);
 
+  // Set auth state from OAuth callback
+  const setAuthFromOAuth = useCallback(async (token: string, _expiresIn: number): Promise<void> => {
+    setState(prev => ({ ...prev, isLoading: true, error: null }));
+    
+    try {
+      // Import the setAccessToken function
+      const { setAccessToken } = await import('@/services/api');
+      setAccessToken(token);
+      
+      // Fetch user info with the new token
+      const apiUser = await authService.me();
+      const user = mapApiUserToAuthUser(apiUser);
+      
+      setState({
+        user,
+        isAuthenticated: true,
+        isLoading: false,
+        authStep: 'complete',
+        error: null,
+      });
+    } catch (error) {
+      const apiError = error as ApiError;
+      setState(prev => ({
+        ...prev,
+        isLoading: false,
+        error: apiError.message || 'Failed to complete OAuth authentication',
+      }));
+      throw error;
+    }
+  }, []);
+
+  // Verify and activate 2FA (returns backup codes)
+  const verifyAndActivateTwoFactor = useCallback(async (code: string): Promise<string[]> => {
+    try {
+      const response = await authService.verifyTwoFactor2FA(code);
+      
+      // Update user state to reflect 2FA enabled
+      setState(prev => {
+        if (prev.user) {
+          return {
+            ...prev,
+            user: { ...prev.user, twoFactorEnabled: true },
+          };
+        }
+        return prev;
+      });
+
+      return response.backupCodes;
+    } catch (error) {
+      const apiError = error as ApiError;
+      throw new Error(apiError.message || 'Failed to verify 2FA code');
+    }
+  }, []);
+
   return (
     <AuthContext.Provider
       value={{
@@ -459,11 +515,13 @@ export function AuthProvider({ children }: AuthProviderProps) {
         resetPassword,
         updatePassword,
         enableTwoFactor,
+        verifyAndActivateTwoFactor,
         disableTwoFactor,
         hasRole,
         hasPermission,
         clearError,
         resendVerificationEmail,
+        setAuthFromOAuth,
       }}
     >
       {children}

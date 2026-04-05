@@ -1,4 +1,5 @@
-import { ActivityAction, EntityType } from '../types/index.js';
+import { Prisma } from '@prisma/client';
+import { ActivityAction, EntityType } from '../types';
 interface LogActivityParams {
     workspaceId?: string;
     projectId?: string;
@@ -16,11 +17,11 @@ export declare const activityService: {
         createdAt: Date;
         workspaceId: string | null;
         projectId: string | null;
+        metadata: Prisma.JsonValue | null;
+        taskId: string | null;
         action: import(".prisma/client").$Enums.ActivityAction;
         entityType: import(".prisma/client").$Enums.EntityType;
         entityId: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        taskId: string | null;
     }>;
     getByEntity(entityType: EntityType, entityId: string, limit?: number): Promise<({
         user: {
@@ -34,11 +35,11 @@ export declare const activityService: {
         createdAt: Date;
         workspaceId: string | null;
         projectId: string | null;
+        metadata: Prisma.JsonValue | null;
+        taskId: string | null;
         action: import(".prisma/client").$Enums.ActivityAction;
         entityType: import(".prisma/client").$Enums.EntityType;
         entityId: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        taskId: string | null;
     })[]>;
     getTaskActivity(taskId: string, limit?: number): Promise<({
         user: {
@@ -52,11 +53,11 @@ export declare const activityService: {
         createdAt: Date;
         workspaceId: string | null;
         projectId: string | null;
+        metadata: Prisma.JsonValue | null;
+        taskId: string | null;
         action: import(".prisma/client").$Enums.ActivityAction;
         entityType: import(".prisma/client").$Enums.EntityType;
         entityId: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        taskId: string | null;
     })[]>;
     getProjectActivity(projectId: string, limit?: number): Promise<({
         task: {
@@ -74,11 +75,11 @@ export declare const activityService: {
         createdAt: Date;
         workspaceId: string | null;
         projectId: string | null;
+        metadata: Prisma.JsonValue | null;
+        taskId: string | null;
         action: import(".prisma/client").$Enums.ActivityAction;
         entityType: import(".prisma/client").$Enums.EntityType;
         entityId: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        taskId: string | null;
     })[]>;
     getWorkspaceActivity(workspaceId: string, limit?: number): Promise<({
         task: {
@@ -100,11 +101,11 @@ export declare const activityService: {
         createdAt: Date;
         workspaceId: string | null;
         projectId: string | null;
+        metadata: Prisma.JsonValue | null;
+        taskId: string | null;
         action: import(".prisma/client").$Enums.ActivityAction;
         entityType: import(".prisma/client").$Enums.EntityType;
         entityId: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        taskId: string | null;
     })[]>;
     getUserActivity(userId: string, limit?: number): Promise<({
         task: {
@@ -125,11 +126,11 @@ export declare const activityService: {
         createdAt: Date;
         workspaceId: string | null;
         projectId: string | null;
+        metadata: Prisma.JsonValue | null;
+        taskId: string | null;
         action: import(".prisma/client").$Enums.ActivityAction;
         entityType: import(".prisma/client").$Enums.EntityType;
         entityId: string;
-        metadata: import("@prisma/client/runtime/library").JsonValue | null;
-        taskId: string | null;
     })[]>;
 };
 export default activityService;

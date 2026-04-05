@@ -5,6 +5,7 @@ import { Card, CardHeader, CardTitle, CardContent, CardDescription } from '@/com
 import { Button } from '@/components/ui/Button';
 import { cn } from '@/lib/utils';
 import { Globe, Moon, Sun, Monitor, Check } from 'lucide-react';
+import { TwoFactorSettings } from './TwoFactorSettings';
 
 export default function Settings() {
   const { t } = useTranslation();
@@ -127,6 +128,9 @@ export default function Settings() {
           </div>
         </CardContent>
       </Card>
+
+      {/* Two-Factor Authentication */}
+      <TwoFactorSettings />
     </div>
   );
 }

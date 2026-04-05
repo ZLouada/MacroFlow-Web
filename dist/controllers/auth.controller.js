@@ -2,7 +2,9 @@
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.authController = void 0;
 const auth_service_1 = require("../services/auth.service");
+const google_oauth_service_1 = require("../services/google-oauth.service");
 const errors_1 = require("../utils/errors");
+const index_1 = require("../config/index");
 exports.authController = {
     /**
      * Register a new user
@@ -345,6 +347,58 @@ exports.authController = {
         }
         catch (error) {
             next(error);
+        }
+    },
+    /**
+     * Redirect to Google OAuth
+     * GET /api/v1/auth/google
+     */
+    async googleAuth(req, res, next) {
+        try {
+            const state = req.query.state;
+            const authUrl = google_oauth_service_1.googleOAuthService.getAuthorizationUrl(state);
+            res.redirect(authUrl);
+        }
+        catch (error) {
+            next(error);
+        }
+    },
+    /**
+     * Handle Google OAuth callback
+     * GET /api/v1/auth/google/callback
+     */
+    async googleCallback(req, res, next) {
+        try {
+            const { code, error: oauthError } = req.query;
+            if (oauthError) {
+                // Redirect to frontend with error
+                return res.redirect(`${index_1.config.frontend.url}/login?error=${encodeURIComponent(oauthError)}`);
+            }
+            if (!code || typeof code !== 'string') {
+                return res.redirect(`${index_1.config.frontend.url}/login?error=missing_code`);
+            }
+            const userAgent = req.headers['user-agent'] || 'unknown';
+            const ipAddress = req.ip || req.socket.remoteAddress || 'unknown';
+            const result = await google_oauth_service_1.googleOAuthService.handleCallback(code, userAgent, ipAddress);
+            // Set refresh token as HTTP-only cookie
+            res.cookie('refreshToken', result.refreshToken, {
+                httpOnly: true,
+                secure: process.env.NODE_ENV === 'production',
+                sameSite: 'lax', // 'lax' is needed for OAuth redirects
+                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            });
+            // Redirect to frontend with access token (frontend will store it)
+            const redirectUrl = new URL(`${index_1.config.frontend.url}/auth/callback`);
+            redirectUrl.searchParams.set('token', result.accessToken);
+            redirectUrl.searchParams.set('expiresIn', result.expiresIn.toString());
+            if (result.isNewUser) {
+                redirectUrl.searchParams.set('newUser', 'true');
+            }
+            res.redirect(redirectUrl.toString());
+        }
+        catch (error) {
+            console.error('Google OAuth callback error:', error);
+            res.redirect(`${index_1.config.frontend.url}/login?error=oauth_failed`);
         }
     },
 };

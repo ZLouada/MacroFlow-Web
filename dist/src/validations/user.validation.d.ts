@@ -69,7 +69,41 @@ export declare const listUsersQuerySchema: z.ZodObject<{
     sortBy?: "name" | "createdAt" | "email" | undefined;
     sortOrder?: "asc" | "desc" | undefined;
 }>;
+export declare const updateProfileSchema: z.ZodObject<{
+    name: z.ZodOptional<z.ZodString>;
+    avatar: z.ZodNullable<z.ZodOptional<z.ZodString>>;
+    timezone: z.ZodOptional<z.ZodString>;
+    bio: z.ZodOptional<z.ZodString>;
+}, "strip", z.ZodTypeAny, {
+    name?: string | undefined;
+    avatar?: string | null | undefined;
+    timezone?: string | undefined;
+    bio?: string | undefined;
+}, {
+    name?: string | undefined;
+    avatar?: string | null | undefined;
+    timezone?: string | undefined;
+    bio?: string | undefined;
+}>;
+export declare const searchUsersSchema: z.ZodObject<{
+    query: z.ZodOptional<z.ZodString>;
+    workspaceId: z.ZodOptional<z.ZodString>;
+    projectId: z.ZodOptional<z.ZodString>;
+    limit: z.ZodEffects<z.ZodDefault<z.ZodString>, number, string | undefined>;
+}, "strip", z.ZodTypeAny, {
+    limit: number;
+    workspaceId?: string | undefined;
+    projectId?: string | undefined;
+    query?: string | undefined;
+}, {
+    workspaceId?: string | undefined;
+    projectId?: string | undefined;
+    limit?: string | undefined;
+    query?: string | undefined;
+}>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 export type UpdatePreferencesInput = z.infer<typeof updatePreferencesSchema>;
+export type UpdateProfileInput = z.infer<typeof updateProfileSchema>;
+export type SearchUsersInput = z.infer<typeof searchUsersSchema>;
 export type ListUsersQuery = z.infer<typeof listUsersQuerySchema>;
 //# sourceMappingURL=user.validation.d.ts.map

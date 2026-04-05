@@ -23,13 +23,13 @@ router.get('/projects/:projectId/columns', (0, auth_middleware_js_1.requireProje
  * @desc    Create a new column
  * @access  Private (Project Manager)
  */
-router.post('/projects/:projectId/columns', (0, auth_middleware_js_1.requireProjectAccess)([index_js_1.ProjectRole.MANAGER]), (0, error_middleware_js_1.validate)(column_validation_js_1.createColumnSchema), (0, error_middleware_js_1.asyncHandler)(column_controller_js_1.columnController.create));
+router.post('/projects/:projectId/columns', (0, auth_middleware_js_1.requireProjectAccess)(index_js_1.ProjectRole.MANAGER), (0, error_middleware_js_1.validate)({ body: column_validation_js_1.createColumnSchema }), (0, error_middleware_js_1.asyncHandler)(column_controller_js_1.columnController.create));
 /**
  * @route   POST /api/v1/projects/:projectId/columns/reorder
  * @desc    Reorder columns
  * @access  Private (Project Manager)
  */
-router.post('/projects/:projectId/columns/reorder', (0, auth_middleware_js_1.requireProjectAccess)([index_js_1.ProjectRole.MANAGER]), (0, error_middleware_js_1.validate)(column_validation_js_1.reorderColumnsSchema), (0, error_middleware_js_1.asyncHandler)(column_controller_js_1.columnController.reorderAll));
+router.post('/projects/:projectId/columns/reorder', (0, auth_middleware_js_1.requireProjectAccess)(index_js_1.ProjectRole.MANAGER), (0, error_middleware_js_1.validate)({ body: column_validation_js_1.reorderColumnsSchema }), (0, error_middleware_js_1.asyncHandler)(column_controller_js_1.columnController.reorderAll));
 // ===========================================
 // Individual Column Operations
 // ===========================================
@@ -44,7 +44,7 @@ router.get('/:columnId', (0, error_middleware_js_1.asyncHandler)(column_controll
  * @desc    Update column
  * @access  Private (Project Manager)
  */
-router.patch('/:columnId', (0, error_middleware_js_1.validate)(column_validation_js_1.updateColumnSchema), (0, error_middleware_js_1.asyncHandler)(column_controller_js_1.columnController.update));
+router.patch('/:columnId', (0, error_middleware_js_1.validate)({ body: column_validation_js_1.updateColumnSchema }), (0, error_middleware_js_1.asyncHandler)(column_controller_js_1.columnController.update));
 /**
  * @route   DELETE /api/v1/columns/:columnId
  * @desc    Delete column

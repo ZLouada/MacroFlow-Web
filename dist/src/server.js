@@ -59,8 +59,8 @@ exports.io = io;
 // ===========================================
 const startServer = async () => {
     try {
-        // Test database connection
-        await database_js_1.prisma.$queryRaw `SELECT 1`;
+        // Test database connection (MongoDB)
+        await database_js_1.prisma.user.findFirst({ take: 1 });
         logger_js_1.logger.info('Database connection established');
         // Test Redis connection
         const redis = (0, redis_js_1.getRedisClient)();

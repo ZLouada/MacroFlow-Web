@@ -81,5 +81,15 @@ export declare const authController: {
      * POST /api/v1/auth/change-password
      */
     changePassword(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void>;
+    /**
+     * Redirect to Google OAuth
+     * GET /api/v1/auth/google
+     */
+    googleAuth(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void>;
+    /**
+     * Handle Google OAuth callback
+     * GET /api/v1/auth/google/callback
+     */
+    googleCallback(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void>;
 };
 //# sourceMappingURL=auth.controller.d.ts.map

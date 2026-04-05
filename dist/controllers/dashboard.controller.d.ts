@@ -17,6 +17,11 @@ export declare const dashboardController: {
      */
     getPersonalDashboard(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void>;
     /**
+     * Get user's tasks across all projects
+     * GET /api/v1/dashboard/tasks
+     */
+    getMyTasks(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void>;
+    /**
      * Get task summary (counts by status, priority, etc.)
      * GET /api/v1/workspaces/:workspaceId/analytics/tasks
      */

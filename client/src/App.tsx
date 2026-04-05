@@ -12,6 +12,7 @@ const GanttChart = lazy(() => import('./features/gantt/GanttChart'));
 const Settings = lazy(() => import('./features/settings/Settings'));
 const LoginPage = lazy(() => import('./features/auth/LoginPage'));
 const SignUpPage = lazy(() => import('./features/auth/SignUpPage'));
+const AuthCallback = lazy(() => import('./features/auth/AuthCallback'));
 
 // Placeholder pages for upcoming features
 const CalendarPage = lazy(() => import('./features/placeholder/PlaceholderPages').then(m => ({ default: m.CalendarPage })));
@@ -71,6 +72,9 @@ function App() {
               </PublicRoute>
             }
           />
+          
+          {/* OAuth callback route */}
+          <Route path="/auth/callback" element={<AuthCallback />} />
 
           {/* Protected routes with dashboard layout */}
           <Route

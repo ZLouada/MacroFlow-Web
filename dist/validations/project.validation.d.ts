@@ -80,7 +80,15 @@ export declare const projectMemberParamSchema: z.ZodObject<{
     id: string;
     userId: string;
 }>;
+export declare const updateProjectMemberSchema: z.ZodObject<{
+    role: z.ZodEnum<["manager", "member", "viewer"]>;
+}, "strip", z.ZodTypeAny, {
+    role: "viewer" | "member" | "manager";
+}, {
+    role: "viewer" | "member" | "manager";
+}>;
 export type CreateProjectInput = z.infer<typeof createProjectSchema>;
 export type UpdateProjectInput = z.infer<typeof updateProjectSchema>;
 export type AddProjectMemberInput = z.infer<typeof addProjectMemberSchema>;
+export type UpdateProjectMemberInput = z.infer<typeof updateProjectMemberSchema>;
 //# sourceMappingURL=project.validation.d.ts.map

@@ -91,6 +91,30 @@ router.post(
 );
 
 // ===========================================
+// Google OAuth Routes
+// ===========================================
+
+/**
+ * @route   GET /api/v1/auth/google
+ * @desc    Redirect to Google OAuth
+ * @access  Public
+ */
+router.get(
+  '/google',
+  asyncHandler(authController.googleAuth)
+);
+
+/**
+ * @route   GET /api/v1/auth/google/callback
+ * @desc    Handle Google OAuth callback
+ * @access  Public
+ */
+router.get(
+  '/google/callback',
+  asyncHandler(authController.googleCallback)
+);
+
+// ===========================================
 // Protected Routes
 // ===========================================
 
@@ -171,6 +195,43 @@ router.delete(
   '/sessions/:sessionId',
   authenticate,
   asyncHandler(authController.revokeSession)
+);
+
+// ===========================================
+// Two-Factor Authentication Routes
+// ===========================================
+
+/**
+ * @route   POST /api/v1/auth/2fa/enable
+ * @desc    Enable 2FA (get QR code and secret)
+ * @access  Private
+ */
+router.post(
+  '/2fa/enable',
+  authenticate,
+  asyncHandler(authController.enableTwoFactor)
+);
+
+/**
+ * @route   POST /api/v1/auth/2fa/verify
+ * @desc    Verify and activate 2FA
+ * @access  Private
+ */
+router.post(
+  '/2fa/verify',
+  authenticate,
+  asyncHandler(authController.verifyTwoFactor)
+);
+
+/**
+ * @route   POST /api/v1/auth/2fa/disable
+ * @desc    Disable 2FA
+ * @access  Private
+ */
+router.post(
+  '/2fa/disable',
+  authenticate,
+  asyncHandler(authController.disableTwoFactor)
 );
 
 export default router;

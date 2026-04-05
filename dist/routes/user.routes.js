@@ -43,7 +43,7 @@ router.get('/profile', (0, error_middleware_js_1.asyncHandler)(user_controller_j
  * @desc    Update current user profile
  * @access  Private
  */
-router.patch('/profile', (0, error_middleware_js_1.validate)(user_validation_js_1.updateProfileSchema), (0, error_middleware_js_1.asyncHandler)(user_controller_js_1.userController.updateProfile));
+router.patch('/profile', (0, error_middleware_js_1.validate)({ body: user_validation_js_1.updateProfileSchema }), (0, error_middleware_js_1.asyncHandler)(user_controller_js_1.userController.updateProfile));
 /**
  * @route   POST /api/v1/users/avatar
  * @desc    Upload user avatar
@@ -67,7 +67,7 @@ router.get('/preferences', (0, error_middleware_js_1.asyncHandler)(user_controll
  * @desc    Update user preferences
  * @access  Private
  */
-router.patch('/preferences', (0, error_middleware_js_1.validate)(user_validation_js_1.updatePreferencesSchema), (0, error_middleware_js_1.asyncHandler)(user_controller_js_1.userController.updatePreferences));
+router.patch('/preferences', (0, error_middleware_js_1.validate)({ body: user_validation_js_1.updatePreferencesSchema }), (0, error_middleware_js_1.asyncHandler)(user_controller_js_1.userController.updatePreferences));
 /**
  * @route   GET /api/v1/users/activity
  * @desc    Get user activity history
@@ -88,7 +88,7 @@ router.delete('/account', (0, error_middleware_js_1.asyncHandler)(user_controlle
  * @desc    Search users (for mentions, assignments, etc.)
  * @access  Private
  */
-router.get('/search', (0, error_middleware_js_1.validate)(user_validation_js_1.searchUsersSchema), (0, error_middleware_js_1.asyncHandler)(user_controller_js_1.userController.searchUsers));
+router.get('/search', (0, error_middleware_js_1.validate)({ query: user_validation_js_1.searchUsersSchema }), (0, error_middleware_js_1.asyncHandler)(user_controller_js_1.userController.searchUsers));
 /**
  * @route   GET /api/v1/users/:userId
  * @desc    Get user by ID (limited info)
@@ -103,24 +103,24 @@ router.get('/:userId', (0, error_middleware_js_1.asyncHandler)(user_controller_j
  * @desc    List all users (admin only)
  * @access  Private (Admin)
  */
-router.get('/', (0, auth_middleware_js_1.requireRole)([index_js_1.UserRole.ADMIN]), (0, error_middleware_js_1.asyncHandler)(user_controller_js_1.userController.listUsers));
+router.get('/', (0, auth_middleware_js_1.requireRole)(index_js_1.UserRole.ADMIN), (0, error_middleware_js_1.asyncHandler)(user_controller_js_1.userController.listUsers));
 /**
  * @route   PATCH /api/v1/users/:userId/role
  * @desc    Update user role (admin only)
  * @access  Private (Admin)
  */
-router.patch('/:userId/role', (0, auth_middleware_js_1.requireRole)([index_js_1.UserRole.ADMIN]), (0, error_middleware_js_1.asyncHandler)(user_controller_js_1.userController.updateUserRole));
+router.patch('/:userId/role', (0, auth_middleware_js_1.requireRole)(index_js_1.UserRole.ADMIN), (0, error_middleware_js_1.asyncHandler)(user_controller_js_1.userController.updateUserRole));
 /**
  * @route   POST /api/v1/users/:userId/suspend
  * @desc    Suspend user (admin only)
  * @access  Private (Admin)
  */
-router.post('/:userId/suspend', (0, auth_middleware_js_1.requireRole)([index_js_1.UserRole.ADMIN]), (0, error_middleware_js_1.asyncHandler)(user_controller_js_1.userController.suspendUser));
+router.post('/:userId/suspend', (0, auth_middleware_js_1.requireRole)(index_js_1.UserRole.ADMIN), (0, error_middleware_js_1.asyncHandler)(user_controller_js_1.userController.suspendUser));
 /**
  * @route   POST /api/v1/users/:userId/activate
  * @desc    Activate user (admin only)
  * @access  Private (Admin)
  */
-router.post('/:userId/activate', (0, auth_middleware_js_1.requireRole)([index_js_1.UserRole.ADMIN]), (0, error_middleware_js_1.asyncHandler)(user_controller_js_1.userController.activateUser));
+router.post('/:userId/activate', (0, auth_middleware_js_1.requireRole)(index_js_1.UserRole.ADMIN), (0, error_middleware_js_1.asyncHandler)(user_controller_js_1.userController.activateUser));
 exports.default = router;
 //# sourceMappingURL=user.routes.js.map

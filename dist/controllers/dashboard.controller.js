@@ -58,6 +58,26 @@ exports.dashboardController = {
         }
     },
     /**
+     * Get user's tasks across all projects
+     * GET /api/v1/dashboard/tasks
+     */
+    async getMyTasks(req, res, next) {
+        try {
+            if (!req.user?.id) {
+                throw new errors_1.AppError('User not authenticated', 401);
+            }
+            const { limit } = req.query;
+            const tasks = await dashboard_service_1.dashboardService.getMyTasks(req.user.id, limit ? parseInt(limit, 10) : 20);
+            res.json({
+                success: true,
+                data: tasks,
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    },
+    /**
      * Get task summary (counts by status, priority, etc.)
      * GET /api/v1/workspaces/:workspaceId/analytics/tasks
      */

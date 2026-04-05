@@ -10,7 +10,6 @@ const activity_service_js_1 = require("../services/activity.service.js");
 const upload_service_js_1 = require("../services/upload.service.js");
 const simulation_service_js_1 = require("../services/simulation.service.js");
 const database_js_1 = require("../config/database.js");
-const index_js_1 = require("../types/index.js");
 // Email worker
 const emailWorker = new bullmq_1.Worker(queue_js_1.QUEUE_NAMES.EMAIL, async (job) => {
     const { type, to, data } = job.data;
@@ -143,7 +142,7 @@ const simulationWorker = new bullmq_1.Worker(queue_js_1.QUEUE_NAMES.SIMULATION, 
             },
         });
         // Notify user
-        await notification_service_js_1.notificationService.create(userId, index_js_1.NotificationType.SYSTEM, 'Simulation Complete', `Your economic simulation "${scenario.name}" has completed successfully.`, { scenarioId });
+        await notification_service_js_1.notificationService.create(userId, 'system', 'Simulation Complete', `Your economic simulation "${scenario.name}" has completed successfully.`, { scenarioId });
         logger_js_1.logger.info(`Simulation job completed`, { jobId: job.id, scenarioId });
     }
     catch (error) {

@@ -43,7 +43,7 @@ router.get('/', (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_
  * @desc    Create a new workspace
  * @access  Private
  */
-router.post('/', (0, error_middleware_js_1.validate)(workspace_validation_js_1.createWorkspaceSchema), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.create));
+router.post('/', (0, error_middleware_js_1.validate)({ body: workspace_validation_js_1.createWorkspaceSchema }), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.create));
 /**
  * @route   GET /api/v1/workspaces/:workspaceId
  * @desc    Get workspace details
@@ -55,19 +55,19 @@ router.get('/:workspaceId', (0, auth_middleware_js_1.requireWorkspaceAccess)(), 
  * @desc    Update workspace
  * @access  Private (Workspace Admin)
  */
-router.patch('/:workspaceId', (0, auth_middleware_js_1.requireWorkspaceAccess)([index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN]), (0, error_middleware_js_1.validate)(workspace_validation_js_1.updateWorkspaceSchema), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.update));
+router.patch('/:workspaceId', (0, auth_middleware_js_1.requireWorkspaceAccess)(index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN), (0, error_middleware_js_1.validate)({ body: workspace_validation_js_1.updateWorkspaceSchema }), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.update));
 /**
  * @route   DELETE /api/v1/workspaces/:workspaceId
  * @desc    Delete workspace
  * @access  Private (Workspace Owner)
  */
-router.delete('/:workspaceId', (0, auth_middleware_js_1.requireWorkspaceAccess)([index_js_1.WorkspaceRole.OWNER]), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.delete));
+router.delete('/:workspaceId', (0, auth_middleware_js_1.requireWorkspaceAccess)(index_js_1.WorkspaceRole.OWNER), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.delete));
 /**
  * @route   POST /api/v1/workspaces/:workspaceId/logo
  * @desc    Upload workspace logo
  * @access  Private (Workspace Admin)
  */
-router.post('/:workspaceId/logo', (0, auth_middleware_js_1.requireWorkspaceAccess)([index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN]), rateLimit_middleware_js_1.uploadRateLimiter, upload.single('logo'), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.uploadLogo));
+router.post('/:workspaceId/logo', (0, auth_middleware_js_1.requireWorkspaceAccess)(index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN), rateLimit_middleware_js_1.uploadRateLimiter, upload.single('logo'), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.uploadLogo));
 // ===========================================
 // Workspace Members
 // ===========================================
@@ -82,25 +82,25 @@ router.get('/:workspaceId/members', (0, auth_middleware_js_1.requireWorkspaceAcc
  * @desc    Add member to workspace
  * @access  Private (Workspace Admin)
  */
-router.post('/:workspaceId/members', (0, auth_middleware_js_1.requireWorkspaceAccess)([index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN]), (0, error_middleware_js_1.validate)(workspace_validation_js_1.inviteMemberSchema), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.addMember));
+router.post('/:workspaceId/members', (0, auth_middleware_js_1.requireWorkspaceAccess)(index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN), (0, error_middleware_js_1.validate)({ body: workspace_validation_js_1.inviteMemberSchema }), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.addMember));
 /**
  * @route   POST /api/v1/workspaces/:workspaceId/members/invite
  * @desc    Invite member to workspace (by email)
  * @access  Private (Workspace Admin)
  */
-router.post('/:workspaceId/members/invite', (0, auth_middleware_js_1.requireWorkspaceAccess)([index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN]), (0, error_middleware_js_1.validate)(workspace_validation_js_1.inviteMemberSchema), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.addMember));
+router.post('/:workspaceId/members/invite', (0, auth_middleware_js_1.requireWorkspaceAccess)(index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN), (0, error_middleware_js_1.validate)({ body: workspace_validation_js_1.inviteMemberSchema }), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.addMember));
 /**
  * @route   PATCH /api/v1/workspaces/:workspaceId/members/:memberId
  * @desc    Update member role
  * @access  Private (Workspace Admin)
  */
-router.patch('/:workspaceId/members/:memberId', (0, auth_middleware_js_1.requireWorkspaceAccess)([index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN]), (0, error_middleware_js_1.validate)(workspace_validation_js_1.updateMemberRoleSchema), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.updateMemberRole));
+router.patch('/:workspaceId/members/:memberId', (0, auth_middleware_js_1.requireWorkspaceAccess)(index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN), (0, error_middleware_js_1.validate)({ body: workspace_validation_js_1.updateMemberRoleSchema }), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.updateMemberRole));
 /**
  * @route   DELETE /api/v1/workspaces/:workspaceId/members/:memberId
  * @desc    Remove member from workspace
  * @access  Private (Workspace Admin)
  */
-router.delete('/:workspaceId/members/:memberId', (0, auth_middleware_js_1.requireWorkspaceAccess)([index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN]), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.removeMember));
+router.delete('/:workspaceId/members/:memberId', (0, auth_middleware_js_1.requireWorkspaceAccess)(index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.removeMember));
 /**
  * @route   POST /api/v1/workspaces/:workspaceId/leave
  * @desc    Leave workspace
@@ -112,7 +112,7 @@ router.post('/:workspaceId/leave', (0, auth_middleware_js_1.requireWorkspaceAcce
  * @desc    Transfer workspace ownership
  * @access  Private (Workspace Owner)
  */
-router.post('/:workspaceId/transfer', (0, auth_middleware_js_1.requireWorkspaceAccess)([index_js_1.WorkspaceRole.OWNER]), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.transferOwnership));
+router.post('/:workspaceId/transfer', (0, auth_middleware_js_1.requireWorkspaceAccess)(index_js_1.WorkspaceRole.OWNER), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.transferOwnership));
 // ===========================================
 // Workspace Invites
 // ===========================================
@@ -121,7 +121,7 @@ router.post('/:workspaceId/transfer', (0, auth_middleware_js_1.requireWorkspaceA
  * @desc    Create workspace invite link
  * @access  Private (Workspace Admin)
  */
-router.post('/:workspaceId/invite', (0, auth_middleware_js_1.requireWorkspaceAccess)([index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN]), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.createInviteLink));
+router.post('/:workspaceId/invite', (0, auth_middleware_js_1.requireWorkspaceAccess)(index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.createInviteLink));
 /**
  * @route   POST /api/v1/workspaces/join/:inviteCode
  * @desc    Join workspace via invite link
@@ -157,12 +157,12 @@ router.get('/:workspaceId/stats', (0, auth_middleware_js_1.requireWorkspaceAcces
  * @desc    Get workspace settings
  * @access  Private (Workspace Admin)
  */
-router.get('/:workspaceId/settings', (0, auth_middleware_js_1.requireWorkspaceAccess)([index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN]), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.getSettings));
+router.get('/:workspaceId/settings', (0, auth_middleware_js_1.requireWorkspaceAccess)(index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.getSettings));
 /**
  * @route   PATCH /api/v1/workspaces/:workspaceId/settings
  * @desc    Update workspace settings
  * @access  Private (Workspace Admin)
  */
-router.patch('/:workspaceId/settings', (0, auth_middleware_js_1.requireWorkspaceAccess)([index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN]), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.updateSettings));
+router.patch('/:workspaceId/settings', (0, auth_middleware_js_1.requireWorkspaceAccess)(index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN), (0, error_middleware_js_1.asyncHandler)(workspace_controller_js_1.workspaceController.updateSettings));
 exports.default = router;
 //# sourceMappingURL=workspace.routes.js.map

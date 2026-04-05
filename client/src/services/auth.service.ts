@@ -172,17 +172,17 @@ export const authService = {
   },
 
   /**
-   * Setup two-factor authentication
+   * Setup two-factor authentication (get QR code)
    */
   async setupTwoFactor(): Promise<TwoFactorSetupResponse> {
-    return api.post('/auth/2fa/setup');
+    return api.post('/auth/2fa/enable');
   },
 
   /**
-   * Enable two-factor authentication
+   * Verify and activate two-factor authentication
    */
-  async enableTwoFactor(code: string): Promise<{ message: string }> {
-    return api.post('/auth/2fa/enable', { code });
+  async verifyTwoFactor2FA(code: string): Promise<{ backupCodes: string[] }> {
+    return api.post('/auth/2fa/verify', { code });
   },
 
   /**

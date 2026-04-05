@@ -8,6 +8,7 @@ export declare const env: {
     JWT_REFRESH_SECRET: string;
     JWT_EXPIRES_IN: string;
     JWT_REFRESH_EXPIRES_IN: string;
+    GOOGLE_CALLBACK_URL: string;
     S3_REGION: string;
     SMTP_PORT: number;
     EMAIL_FROM: string;
@@ -19,6 +20,8 @@ export declare const env: {
     FRONTEND_URL: string;
     LOG_LEVEL: "error" | "warn" | "info" | "debug";
     REDIS_PASSWORD?: string | undefined;
+    GOOGLE_CLIENT_ID?: string | undefined;
+    GOOGLE_CLIENT_SECRET?: string | undefined;
     S3_BUCKET?: string | undefined;
     S3_ACCESS_KEY?: string | undefined;
     S3_SECRET_KEY?: string | undefined;
@@ -48,6 +51,11 @@ export declare const config: {
         refreshSecret: string;
         expiresIn: string;
         refreshExpiresIn: string;
+    };
+    google: {
+        clientId: string | undefined;
+        clientSecret: string | undefined;
+        callbackUrl: string;
     };
     s3: {
         bucket: string | undefined;

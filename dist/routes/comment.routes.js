@@ -34,7 +34,7 @@ router.get('/tasks/:taskId/comments', (0, error_middleware_js_1.asyncHandler)(co
  * @desc    Create a comment on a task
  * @access  Private (Project Member)
  */
-router.post('/tasks/:taskId/comments', (0, error_middleware_js_1.validate)(comment_validation_js_1.createCommentSchema), (0, error_middleware_js_1.asyncHandler)(comment_controller_js_1.commentController.create));
+router.post('/tasks/:taskId/comments', (0, error_middleware_js_1.validate)({ body: comment_validation_js_1.createCommentSchema }), (0, error_middleware_js_1.asyncHandler)(comment_controller_js_1.commentController.create));
 // ===========================================
 // Individual Comment Operations
 // ===========================================
@@ -49,7 +49,7 @@ router.get('/:commentId', (0, error_middleware_js_1.asyncHandler)(comment_contro
  * @desc    Update comment
  * @access  Private (Comment Author)
  */
-router.patch('/:commentId', (0, error_middleware_js_1.validate)(comment_validation_js_1.updateCommentSchema), (0, error_middleware_js_1.asyncHandler)(comment_controller_js_1.commentController.update));
+router.patch('/:commentId', (0, error_middleware_js_1.validate)({ body: comment_validation_js_1.updateCommentSchema }), (0, error_middleware_js_1.asyncHandler)(comment_controller_js_1.commentController.update));
 /**
  * @route   DELETE /api/v1/comments/:commentId
  * @desc    Delete comment

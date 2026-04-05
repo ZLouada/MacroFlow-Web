@@ -2,6 +2,11 @@ import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../types';
 export declare const projectController: {
     /**
+     * Get all projects in a workspace
+     * GET /api/v1/workspaces/:workspaceId/projects
+     */
+    getAll(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void>;
+    /**
      * Create a new project
      * POST /api/v1/workspaces/:workspaceId/projects
      */

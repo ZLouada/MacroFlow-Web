@@ -2,6 +2,11 @@ import { Response, NextFunction } from 'express';
 import { AuthenticatedRequest } from '../types';
 export declare const labelController: {
     /**
+     * Get all labels for a workspace
+     * GET /api/v1/workspaces/:workspaceId/labels
+     */
+    getByWorkspace(req: AuthenticatedRequest, res: Response, next: NextFunction): Promise<void>;
+    /**
      * Create a label for a project
      * POST /api/v1/projects/:projectId/labels
      */

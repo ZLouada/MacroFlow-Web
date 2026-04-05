@@ -5,6 +5,30 @@ const project_service_1 = require("../services/project.service");
 const errors_1 = require("../utils/errors");
 exports.projectController = {
     /**
+     * Get all projects in a workspace
+     * GET /api/v1/workspaces/:workspaceId/projects
+     */
+    async getAll(req, res, next) {
+        try {
+            const { workspaceId } = req.params;
+            const { cursor, limit, status, search } = req.query;
+            const result = await project_service_1.projectService.getWorkspaceProjects(workspaceId, {
+                cursor: cursor,
+                limit: limit ? parseInt(limit, 10) : undefined,
+                status: status,
+                search: search,
+            });
+            res.json({
+                success: true,
+                data: result.data,
+                pagination: result.pagination,
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    },
+    /**
      * Create a new project
      * POST /api/v1/workspaces/:workspaceId/projects
      */

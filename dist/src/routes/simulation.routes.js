@@ -16,7 +16,7 @@ router.use(auth_middleware_js_1.authenticate);
  * @desc    Run a simulation without saving
  * @access  Private
  */
-router.post('/run', (0, error_middleware_js_1.validate)(scenario_validation_js_1.simulateSchema), (0, error_middleware_js_1.asyncHandler)(simulation_controller_js_1.simulationController.runSimulation));
+router.post('/run', (0, error_middleware_js_1.validate)({ body: scenario_validation_js_1.simulateSchema }), (0, error_middleware_js_1.asyncHandler)(simulation_controller_js_1.simulationController.runSimulation));
 /**
  * @route   GET /api/v1/simulations/models
  * @desc    Get available economic models
@@ -49,7 +49,7 @@ router.get('/scenarios', (0, error_middleware_js_1.asyncHandler)(simulation_cont
  * @desc    Create and save a scenario
  * @access  Private
  */
-router.post('/scenarios', (0, error_middleware_js_1.validate)(scenario_validation_js_1.createScenarioSchema), (0, error_middleware_js_1.asyncHandler)(simulation_controller_js_1.simulationController.create));
+router.post('/scenarios', (0, error_middleware_js_1.validate)({ body: scenario_validation_js_1.createScenarioSchema }), (0, error_middleware_js_1.asyncHandler)(simulation_controller_js_1.simulationController.create));
 /**
  * @route   GET /api/v1/simulations/scenarios/:scenarioId
  * @desc    Get scenario details
@@ -61,7 +61,7 @@ router.get('/scenarios/:scenarioId', (0, error_middleware_js_1.asyncHandler)(sim
  * @desc    Update scenario
  * @access  Private
  */
-router.patch('/scenarios/:scenarioId', (0, error_middleware_js_1.validate)(scenario_validation_js_1.updateScenarioSchema), (0, error_middleware_js_1.asyncHandler)(simulation_controller_js_1.simulationController.update));
+router.patch('/scenarios/:scenarioId', (0, error_middleware_js_1.validate)({ body: scenario_validation_js_1.updateScenarioSchema }), (0, error_middleware_js_1.asyncHandler)(simulation_controller_js_1.simulationController.update));
 /**
  * @route   DELETE /api/v1/simulations/scenarios/:scenarioId
  * @desc    Delete scenario

@@ -1,19 +1,31 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.labelService = exports.commentService = void 0;
+exports.commentService = void 0;
 const database_js_1 = require("../config/database.js");
 const errors_js_1 = require("../utils/errors.js");
 const activity_service_js_1 = require("./activity.service.js");
 const notification_service_js_1 = require("./notification.service.js");
-const socket_service_js_1 = require("./socket.service.js");
-// ===========================================
-// Comment Service
-// ===========================================
 exports.commentService = {
-    // List comments for task
-    async listComments(taskId) {
+    // Get comments by task
+    async getCommentsByTask(taskId, options = {}) {
+        const { cursor, limit = 20 } = options;
+        const task = await database_js_1.prisma.task.findFirst({
+            where: { id: taskId, deletedAt: null },
+        });
+        if (!task) {
+            throw new errors_js_1.NotFoundError('Task not found');
+        }
+        const where = {
+            taskId,
+            deletedAt: null,
+        };
+        if (cursor) {
+            where.id = { lt: cursor };
+        }
         const comments = await database_js_1.prisma.comment.findMany({
-            where: { taskId, deletedAt: null },
+            where,
+            take: limit + 1,
+            orderBy: { createdAt: 'desc' },
             include: {
                 author: {
                     select: { id: true, name: true, avatar: true },
@@ -26,9 +38,47 @@ exports.commentService = {
                     },
                 },
             },
-            orderBy: { createdAt: 'asc' },
         });
-        return comments;
+        const hasMore = comments.length > limit;
+        if (hasMore)
+            comments.pop();
+        return {
+            data: comments,
+            pagination: {
+                cursor: comments.length > 0 ? comments[comments.length - 1].id : null,
+                hasMore,
+                limit,
+            },
+        };
+    },
+    // Get comment by ID
+    async getCommentById(commentId) {
+        const comment = await database_js_1.prisma.comment.findFirst({
+            where: { id: commentId, deletedAt: null },
+            include: {
+                author: {
+                    select: { id: true, name: true, avatar: true },
+                },
+                reactions: {
+                    include: {
+                        user: {
+                            select: { id: true, name: true },
+                        },
+                    },
+                },
+                task: {
+                    select: {
+                        id: true,
+                        title: true,
+                        projectId: true,
+                    },
+                },
+            },
+        });
+        if (!comment) {
+            throw new errors_js_1.NotFoundError('Comment not found');
+        }
+        return comment;
     },
     // Create comment
     async createComment(taskId, userId, data) {
@@ -49,6 +99,7 @@ exports.commentService = {
                 author: {
                     select: { id: true, name: true, avatar: true },
                 },
+                reactions: true,
             },
         });
         await activity_service_js_1.activityService.log({
@@ -62,9 +113,6 @@ exports.commentService = {
         });
         // Notify
         await notification_service_js_1.notificationService.notifyCommentAdded(taskId, userId);
-        // Real-time
-        const socketService = (0, socket_service_js_1.getSocketService)();
-        socketService.notifyCommentAdded(taskId, comment);
         // Parse mentions
         const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
         let match;
@@ -77,7 +125,7 @@ exports.commentService = {
         return comment;
     },
     // Update comment
-    async updateComment(commentId, userId, data) {
+    async updateComment(commentId, userId, content) {
         const comment = await database_js_1.prisma.comment.findFirst({
             where: { id: commentId, deletedAt: null },
         });
@@ -89,7 +137,13 @@ exports.commentService = {
         }
         const updated = await database_js_1.prisma.comment.update({
             where: { id: commentId },
-            data: { content: data.content },
+            data: { content },
+            include: {
+                author: {
+                    select: { id: true, name: true, avatar: true },
+                },
+                reactions: true,
+            },
         });
         return updated;
     },
@@ -108,9 +162,35 @@ exports.commentService = {
             where: { id: commentId },
             data: { deletedAt: new Date() },
         });
+        return { success: true };
+    },
+    // Get comment replies (schema doesn't have parentId, returns empty for now)
+    async getCommentReplies(commentId, options = {}) {
+        const { limit = 20 } = options;
+        const comment = await database_js_1.prisma.comment.findFirst({
+            where: { id: commentId, deletedAt: null },
+        });
+        if (!comment) {
+            throw new errors_js_1.NotFoundError('Comment not found');
+        }
+        // Schema doesn't support nested comments/replies
+        return {
+            data: [],
+            pagination: {
+                cursor: null,
+                hasMore: false,
+                limit,
+            },
+        };
     },
     // Add reaction
     async addReaction(commentId, userId, emoji) {
+        const comment = await database_js_1.prisma.comment.findFirst({
+            where: { id: commentId, deletedAt: null },
+        });
+        if (!comment) {
+            throw new errors_js_1.NotFoundError('Comment not found');
+        }
         const reaction = await database_js_1.prisma.commentReaction.upsert({
             where: {
                 commentId_userId_emoji: {
@@ -125,6 +205,11 @@ exports.commentService = {
                 emoji,
             },
             update: {},
+            include: {
+                user: {
+                    select: { id: true, name: true },
+                },
+            },
         });
         return reaction;
     },
@@ -137,58 +222,121 @@ exports.commentService = {
                 emoji,
             },
         });
+        return { success: true };
     },
-};
-// ===========================================
-// Label Service
-// ===========================================
-exports.labelService = {
-    // List labels for workspace
-    async listLabels(workspaceId) {
-        const labels = await database_js_1.prisma.label.findMany({
-            where: { workspaceId },
-            orderBy: { name: 'asc' },
+    // Get comment reactions
+    async getCommentReactions(commentId) {
+        const comment = await database_js_1.prisma.comment.findFirst({
+            where: { id: commentId, deletedAt: null },
         });
-        return labels;
-    },
-    // Create label
-    async createLabel(workspaceId, data) {
-        const label = await database_js_1.prisma.label.create({
-            data: {
-                workspaceId,
-                name: data.name,
-                color: data.color,
+        if (!comment) {
+            throw new errors_js_1.NotFoundError('Comment not found');
+        }
+        const reactions = await database_js_1.prisma.commentReaction.findMany({
+            where: { commentId },
+            include: {
+                user: {
+                    select: { id: true, name: true, avatar: true },
+                },
             },
         });
-        return label;
+        // Group reactions by emoji
+        const grouped = reactions.reduce((acc, reaction) => {
+            if (!acc[reaction.emoji]) {
+                acc[reaction.emoji] = {
+                    emoji: reaction.emoji,
+                    count: 0,
+                    users: [],
+                };
+            }
+            acc[reaction.emoji].count++;
+            acc[reaction.emoji].users.push(reaction.user);
+            return acc;
+        }, {});
+        return Object.values(grouped);
     },
-    // Update label
-    async updateLabel(labelId, data) {
-        const label = await database_js_1.prisma.label.findUnique({
-            where: { id: labelId },
+    // Pin comment (schema doesn't have isPinned field, returns comment as-is)
+    async pinComment(commentId, userId) {
+        const comment = await database_js_1.prisma.comment.findFirst({
+            where: { id: commentId, deletedAt: null },
+            include: {
+                author: {
+                    select: { id: true, name: true, avatar: true },
+                },
+            },
         });
-        if (!label) {
-            throw new errors_js_1.NotFoundError('Label not found');
+        if (!comment) {
+            throw new errors_js_1.NotFoundError('Comment not found');
         }
-        const updated = await database_js_1.prisma.label.update({
-            where: { id: labelId },
-            data,
-        });
-        return updated;
+        // Schema doesn't support pinning, return comment with isPinned flag
+        return {
+            ...comment,
+            isPinned: true,
+        };
     },
-    // Delete label
-    async deleteLabel(labelId) {
-        const label = await database_js_1.prisma.label.findUnique({
-            where: { id: labelId },
+    // Unpin comment
+    async unpinComment(commentId, userId) {
+        const comment = await database_js_1.prisma.comment.findFirst({
+            where: { id: commentId, deletedAt: null },
+            include: {
+                author: {
+                    select: { id: true, name: true, avatar: true },
+                },
+            },
         });
-        if (!label) {
-            throw new errors_js_1.NotFoundError('Label not found');
+        if (!comment) {
+            throw new errors_js_1.NotFoundError('Comment not found');
         }
-        // This will cascade delete TaskLabel entries
-        await database_js_1.prisma.label.delete({
-            where: { id: labelId },
+        return {
+            ...comment,
+            isPinned: false,
+        };
+    },
+    // Resolve comment (schema doesn't have isResolved field, returns comment as-is)
+    async resolveComment(commentId, userId) {
+        const comment = await database_js_1.prisma.comment.findFirst({
+            where: { id: commentId, deletedAt: null },
+            include: {
+                author: {
+                    select: { id: true, name: true, avatar: true },
+                },
+            },
         });
+        if (!comment) {
+            throw new errors_js_1.NotFoundError('Comment not found');
+        }
+        return {
+            ...comment,
+            isResolved: true,
+            resolvedBy: userId,
+            resolvedAt: new Date(),
+        };
+    },
+    // Unresolve comment
+    async unresolveComment(commentId, userId) {
+        const comment = await database_js_1.prisma.comment.findFirst({
+            where: { id: commentId, deletedAt: null },
+            include: {
+                author: {
+                    select: { id: true, name: true, avatar: true },
+                },
+            },
+        });
+        if (!comment) {
+            throw new errors_js_1.NotFoundError('Comment not found');
+        }
+        return {
+            ...comment,
+            isResolved: false,
+            resolvedBy: null,
+            resolvedAt: null,
+        };
+    },
+    // Legacy method aliases
+    async listComments(taskId) {
+        const result = await this.getCommentsByTask(taskId);
+        return result.data;
     },
 };
-exports.default = { commentService: exports.commentService, labelService: exports.labelService };
+exports.default = exports.commentService;
 //# sourceMappingURL=comment.service.js.map

@@ -1,11 +1,11 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.activityService = void 0;
-const database_js_1 = require("../config/database.js");
+const database_1 = require("../config/database");
 exports.activityService = {
     // Log activity
     async log(params) {
-        const activity = await database_js_1.prisma.activity.create({
+        const activity = await database_1.prisma.activity.create({
             data: {
                 workspaceId: params.workspaceId,
                 projectId: params.projectId,
@@ -21,7 +21,7 @@ exports.activityService = {
     },
     // Get activity by entity
     async getByEntity(entityType, entityId, limit = 50) {
-        const activities = await database_js_1.prisma.activity.findMany({
+        const activities = await database_1.prisma.activity.findMany({
             where: {
                 entityType,
                 entityId,
@@ -42,7 +42,7 @@ exports.activityService = {
     },
     // Get activity for task
     async getTaskActivity(taskId, limit = 50) {
-        const activities = await database_js_1.prisma.activity.findMany({
+        const activities = await database_1.prisma.activity.findMany({
             where: {
                 OR: [
                     { taskId },
@@ -65,7 +65,7 @@ exports.activityService = {
     },
     // Get activity for project
     async getProjectActivity(projectId, limit = 50) {
-        const activities = await database_js_1.prisma.activity.findMany({
+        const activities = await database_1.prisma.activity.findMany({
             where: { projectId },
             include: {
                 user: {
@@ -89,7 +89,7 @@ exports.activityService = {
     },
     // Get activity for workspace
     async getWorkspaceActivity(workspaceId, limit = 50) {
-        const activities = await database_js_1.prisma.activity.findMany({
+        const activities = await database_1.prisma.activity.findMany({
             where: { workspaceId },
             include: {
                 user: {
@@ -119,7 +119,7 @@ exports.activityService = {
     },
     // Get recent activity for user
     async getUserActivity(userId, limit = 50) {
-        const activities = await database_js_1.prisma.activity.findMany({
+        const activities = await database_1.prisma.activity.findMany({
             where: { userId },
             include: {
                 workspace: {

@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.projectMemberParamSchema = exports.workspaceProjectsParamSchema = exports.projectIdParamSchema = exports.addProjectMemberSchema = exports.updateProjectSchema = exports.createProjectSchema = void 0;
+exports.updateProjectMemberSchema = exports.projectMemberParamSchema = exports.workspaceProjectsParamSchema = exports.projectIdParamSchema = exports.addProjectMemberSchema = exports.updateProjectSchema = exports.createProjectSchema = void 0;
 const zod_1 = require("zod");
 // ===========================================
 // Project Validations
@@ -35,5 +35,8 @@ exports.workspaceProjectsParamSchema = zod_1.z.object({
 exports.projectMemberParamSchema = zod_1.z.object({
     id: zod_1.z.string().cuid(),
     userId: zod_1.z.string().cuid(),
+});
+exports.updateProjectMemberSchema = zod_1.z.object({
+    role: zod_1.z.enum(['manager', 'member', 'viewer']),
 });
 //# sourceMappingURL=project.validation.js.map

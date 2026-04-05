@@ -1,7 +1,9 @@
 import { Response, NextFunction } from 'express';
 import { authService } from '../services/auth.service';
+import { googleOAuthService } from '../services/google-oauth.service';
 import { AuthenticatedRequest } from '../types';
 import { AppError } from '../utils/errors';
+import { config } from '../config/index';
 
 export const authController = {
   /**
@@ -385,6 +387,65 @@ export const authController = {
       });
     } catch (error) {
       next(error);
+    }
+  },
+
+  /**
+   * Redirect to Google OAuth
+   * GET /api/v1/auth/google
+   */
+  async googleAuth(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const state = req.query.state as string | undefined;
+      const authUrl = googleOAuthService.getAuthorizationUrl(state);
+      res.redirect(authUrl);
+    } catch (error) {
+      next(error);
+    }
+  },
+
+  /**
+   * Handle Google OAuth callback
+   * GET /api/v1/auth/google/callback
+   */
+  async googleCallback(req: AuthenticatedRequest, res: Response, next: NextFunction) {
+    try {
+      const { code, error: oauthError } = req.query;
+
+      if (oauthError) {
+        // Redirect to frontend with error
+        return res.redirect(`${config.frontend.url}/login?error=${encodeURIComponent(oauthError as string)}`);
+      }
+
+      if (!code || typeof code !== 'string') {
+        return res.redirect(`${config.frontend.url}/login?error=missing_code`);
+      }
+
+      const userAgent = req.headers['user-agent'] || 'unknown';
+      const ipAddress = req.ip || req.socket.remoteAddress || 'unknown';
+
+      const result = await googleOAuthService.handleCallback(code, userAgent, ipAddress);
+
+      // Set refresh token as HTTP-only cookie
+      res.cookie('refreshToken', result.refreshToken, {
+        httpOnly: true,
+        secure: process.env.NODE_ENV === 'production',
+        sameSite: 'lax', // 'lax' is needed for OAuth redirects
+        maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+      });
+
+      // Redirect to frontend with access token (frontend will store it)
+      const redirectUrl = new URL(`${config.frontend.url}/auth/callback`);
+      redirectUrl.searchParams.set('token', result.accessToken);
+      redirectUrl.searchParams.set('expiresIn', result.expiresIn.toString());
+      if (result.isNewUser) {
+        redirectUrl.searchParams.set('newUser', 'true');
+      }
+
+      res.redirect(redirectUrl.toString());
+    } catch (error) {
+      console.error('Google OAuth callback error:', error);
+      res.redirect(`${config.frontend.url}/login?error=oauth_failed`);
     }
   },
 };

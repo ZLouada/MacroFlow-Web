@@ -10,11 +10,15 @@ const helmet_1 = __importDefault(require("helmet"));
 const compression_1 = __importDefault(require("compression"));
 const morgan_1 = __importDefault(require("morgan"));
 const cookie_parser_1 = __importDefault(require("cookie-parser"));
+const path_1 = __importDefault(require("path"));
+const url_1 = require("url");
 const index_js_1 = require("./config/index.js");
 const logger_js_1 = require("./utils/logger.js");
 const error_middleware_js_1 = require("./middleware/error.middleware.js");
 const rateLimit_middleware_js_1 = require("./middleware/rateLimit.middleware.js");
 const index_js_2 = __importDefault(require("./routes/index.js"));
+const __filename = (0, url_1.fileURLToPath)(import.meta.url);
+const __dirname = path_1.default.dirname(__filename);
 // Create Express app
 const app = (0, express_1.default)();
 // ===========================================
@@ -82,13 +86,31 @@ app.use((req, res, next) => {
 // ===========================================
 app.use(rateLimit_middleware_js_1.generalRateLimiter);
 // ===========================================
-// Routes
+// API Routes
 // ===========================================
 app.use(index_js_2.default);
 // ===========================================
+// Static Frontend Serving (Production)
+// ===========================================
+if (index_js_1.config.server.isProduction) {
+    const clientDistPath = path_1.default.join(__dirname, '../../client/dist');
+    // Serve static files from the React app
+    app.use(express_1.default.static(clientDistPath));
+    // Handle React routing - return index.html for any unknown routes
+    // (that aren't API routes which are already handled above)
+    app.get('*', (req, res, next) => {
+        // Skip API routes - let them fall through to 404 handler
+        if (req.path.startsWith('/api') || req.path.startsWith('/health') ||
+            req.path.startsWith('/ready') || req.path.startsWith('/live')) {
+            return next();
+        }
+        res.sendFile(path_1.default.join(clientDistPath, 'index.html'));
+    });
+}
+// ===========================================
 // Error Handling
 // ===========================================
-// 404 handler
+// 404 handler (for API routes)
 app.use(error_middleware_js_1.notFoundHandler);
 // Global error handler
 app.use(error_middleware_js_1.errorHandler);

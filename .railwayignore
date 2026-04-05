@@ -1,0 +1,31 @@
+# Dependencies
+node_modules/
+client/node_modules/
+
+# Build outputs (will be built on Railway)
+dist/
+client/dist/
+
+# Development files
+*.log
+.env.local
+.env.development
+.env.test
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test files
+coverage/
+*.test.ts
+__tests__/
+
+# Client folder (deploying separately to Vercel)
+client/

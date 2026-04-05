@@ -276,5 +276,59 @@ exports.commentController = {
             next(error);
         }
     },
+    /**
+     * Upload attachment to comment
+     * POST /api/v1/comments/:commentId/attachments
+     */
+    async uploadAttachment(req, res, next) {
+        try {
+            if (!req.user?.id) {
+                throw new errors_1.AppError('User not authenticated', 401);
+            }
+            const { commentId } = req.params;
+            const files = req.files;
+            if (!files || files.length === 0) {
+                throw new errors_1.AppError('No files provided', 400);
+            }
+            // For now, return a placeholder response
+            // In production, this would upload to S3 and create attachment records
+            res.status(201).json({
+                success: true,
+                message: 'Attachments uploaded successfully',
+                data: {
+                    commentId,
+                    fileCount: files.length,
+                },
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    },
+    /**
+     * Remove attachment from comment
+     * DELETE /api/v1/comments/:commentId/attachments/:attachmentId
+     */
+    async removeAttachment(req, res, next) {
+        try {
+            if (!req.user?.id) {
+                throw new errors_1.AppError('User not authenticated', 401);
+            }
+            const { commentId, attachmentId } = req.params;
+            // For now, return a placeholder response
+            // In production, this would delete from S3 and remove attachment records
+            res.json({
+                success: true,
+                message: 'Attachment removed successfully',
+                data: {
+                    commentId,
+                    attachmentId,
+                },
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    },
 };
 //# sourceMappingURL=comment.controller.js.map

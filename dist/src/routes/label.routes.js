@@ -23,7 +23,7 @@ router.get('/workspaces/:workspaceId/labels', (0, auth_middleware_js_1.requireWo
  * @desc    Create workspace label
  * @access  Private (Workspace Admin)
  */
-router.post('/workspaces/:workspaceId/labels', (0, auth_middleware_js_1.requireWorkspaceAccess)([index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN]), (0, error_middleware_js_1.validate)(comment_validation_js_1.createLabelSchema), (0, error_middleware_js_1.asyncHandler)(label_controller_js_1.labelController.create));
+router.post('/workspaces/:workspaceId/labels', (0, auth_middleware_js_1.requireWorkspaceAccess)(index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN), (0, error_middleware_js_1.validate)({ body: comment_validation_js_1.createLabelSchema }), (0, error_middleware_js_1.asyncHandler)(label_controller_js_1.labelController.create));
 // ===========================================
 // Project Labels
 // ===========================================
@@ -38,7 +38,7 @@ router.get('/projects/:projectId/labels', (0, auth_middleware_js_1.requireProjec
  * @desc    Create project label
  * @access  Private (Project Manager)
  */
-router.post('/projects/:projectId/labels', (0, auth_middleware_js_1.requireProjectAccess)([index_js_1.ProjectRole.MANAGER]), (0, error_middleware_js_1.validate)(comment_validation_js_1.createLabelSchema), (0, error_middleware_js_1.asyncHandler)(label_controller_js_1.labelController.create));
+router.post('/projects/:projectId/labels', (0, auth_middleware_js_1.requireProjectAccess)(index_js_1.ProjectRole.MANAGER), (0, error_middleware_js_1.validate)({ body: comment_validation_js_1.createLabelSchema }), (0, error_middleware_js_1.asyncHandler)(label_controller_js_1.labelController.create));
 // ===========================================
 // Individual Label Operations
 // ===========================================
@@ -53,7 +53,7 @@ router.get('/:labelId', (0, error_middleware_js_1.asyncHandler)(label_controller
  * @desc    Update label
  * @access  Private (Admin/Manager)
  */
-router.patch('/:labelId', (0, error_middleware_js_1.validate)(comment_validation_js_1.updateLabelSchema), (0, error_middleware_js_1.asyncHandler)(label_controller_js_1.labelController.update));
+router.patch('/:labelId', (0, error_middleware_js_1.validate)({ body: comment_validation_js_1.updateLabelSchema }), (0, error_middleware_js_1.asyncHandler)(label_controller_js_1.labelController.update));
 /**
  * @route   DELETE /api/v1/labels/:labelId
  * @desc    Delete label

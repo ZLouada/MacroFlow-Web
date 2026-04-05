@@ -22,6 +22,10 @@ const envSchema = zod_1.z.object({
     JWT_REFRESH_SECRET: zod_1.z.string().min(32),
     JWT_EXPIRES_IN: zod_1.z.string().default('15m'),
     JWT_REFRESH_EXPIRES_IN: zod_1.z.string().default('7d'),
+    // Google OAuth
+    GOOGLE_CLIENT_ID: zod_1.z.string().optional(),
+    GOOGLE_CLIENT_SECRET: zod_1.z.string().optional(),
+    GOOGLE_CALLBACK_URL: zod_1.z.string().default('/api/v1/auth/google/callback'),
     // S3
     S3_BUCKET: zod_1.z.string().optional(),
     S3_REGION: zod_1.z.string().default('us-east-1'),
@@ -73,6 +77,11 @@ exports.config = {
         refreshSecret: exports.env.JWT_REFRESH_SECRET,
         expiresIn: exports.env.JWT_EXPIRES_IN,
         refreshExpiresIn: exports.env.JWT_REFRESH_EXPIRES_IN,
+    },
+    google: {
+        clientId: exports.env.GOOGLE_CLIENT_ID,
+        clientSecret: exports.env.GOOGLE_CLIENT_SECRET,
+        callbackUrl: exports.env.GOOGLE_CALLBACK_URL,
     },
     s3: {
         bucket: exports.env.S3_BUCKET,

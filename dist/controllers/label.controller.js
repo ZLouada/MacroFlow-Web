@@ -1,9 +1,26 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.labelController = void 0;
-const comment_service_1 = require("../services/comment.service");
+const label_service_1 = require("../services/label.service");
 const errors_1 = require("../utils/errors");
 exports.labelController = {
+    /**
+     * Get all labels for a workspace
+     * GET /api/v1/workspaces/:workspaceId/labels
+     */
+    async getByWorkspace(req, res, next) {
+        try {
+            const { workspaceId } = req.params;
+            const labels = await label_service_1.labelService.listLabels(workspaceId);
+            res.json({
+                success: true,
+                data: labels,
+            });
+        }
+        catch (error) {
+            next(error);
+        }
+    },
     /**
      * Create a label for a project
      * POST /api/v1/projects/:projectId/labels
@@ -14,7 +31,7 @@ exports.labelController = {
                 throw new errors_1.AppError('User not authenticated', 401);
             }
             const { projectId } = req.params;
-            const label = await comment_service_1.labelService.createLabel(projectId, req.user.id, req.body);
+            const label = await label_service_1.labelService.createLabel(projectId, req.user.id, req.body);
             res.status(201).json({
                 success: true,
                 message: 'Label created successfully',
@@ -32,7 +49,7 @@ exports.labelController = {
     async getByProject(req, res, next) {
         try {
             const { projectId } = req.params;
-            const labels = await comment_service_1.labelService.getLabelsByProject(projectId);
+            const labels = await label_service_1.labelService.getLabelsByProject(projectId);
             res.json({
                 success: true,
                 data: labels,
@@ -49,7 +66,7 @@ exports.labelController = {
     async getById(req, res, next) {
         try {
             const { labelId } = req.params;
-            const label = await comment_service_1.labelService.getLabelById(labelId);
+            const label = await label_service_1.labelService.getLabelById(labelId);
             res.json({
                 success: true,
                 data: label,
@@ -69,7 +86,7 @@ exports.labelController = {
                 throw new errors_1.AppError('User not authenticated', 401);
             }
             const { labelId } = req.params;
-            const label = await comment_service_1.labelService.updateLabel(labelId, req.user.id, req.body);
+            const label = await label_service_1.labelService.updateLabel(labelId, req.user.id, req.body);
             res.json({
                 success: true,
                 message: 'Label updated successfully',
@@ -90,7 +107,7 @@ exports.labelController = {
                 throw new errors_1.AppError('User not authenticated', 401);
             }
             const { labelId } = req.params;
-            await comment_service_1.labelService.deleteLabel(labelId, req.user.id);
+            await label_service_1.labelService.deleteLabel(labelId, req.user.id);
             res.json({
                 success: true,
                 message: 'Label deleted successfully',
@@ -108,7 +125,7 @@ exports.labelController = {
         try {
             const { labelId } = req.params;
             const { cursor, limit } = req.query;
-            const result = await comment_service_1.labelService.getTasksWithLabel(labelId, {
+            const result = await label_service_1.labelService.getTasksWithLabel(labelId, {
                 cursor: cursor,
                 limit: limit ? parseInt(limit, 10) : undefined,
             });
@@ -133,7 +150,7 @@ exports.labelController = {
             }
             const { labelId } = req.params;
             const { targetLabelId } = req.body;
-            const label = await comment_service_1.labelService.mergeLabels(labelId, targetLabelId, req.user.id);
+            const label = await label_service_1.labelService.mergeLabels(labelId, targetLabelId, req.user.id);
             res.json({
                 success: true,
                 message: 'Labels merged successfully',
@@ -155,7 +172,7 @@ exports.labelController = {
             }
             const { labelId } = req.params;
             const { taskIds } = req.body;
-            const count = await comment_service_1.labelService.bulkAddLabelToTasks(labelId, taskIds, req.user.id);
+            const count = await label_service_1.labelService.bulkAddLabelToTasks(labelId, taskIds, req.user.id);
             res.json({
                 success: true,
                 message: `Label added to ${count} tasks`,
@@ -176,7 +193,7 @@ exports.labelController = {
             }
             const { labelId } = req.params;
             const { taskIds } = req.body;
-            const count = await comment_service_1.labelService.bulkRemoveLabelFromTasks(labelId, taskIds, req.user.id);
+            const count = await label_service_1.labelService.bulkRemoveLabelFromTasks(labelId, taskIds, req.user.id);
             res.json({
                 success: true,
                 message: `Label removed from ${count} tasks`,

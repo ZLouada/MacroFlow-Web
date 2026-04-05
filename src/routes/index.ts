@@ -177,15 +177,6 @@ v1Router.use('/simulations', simulationRoutes);
 router.use('/api/v1', v1Router);
 
 // ===========================================
-// Legacy/Headless Simulation Routes (for frontend)
-// ===========================================
-// Import the headless simulation router from the frontend server
-import { simulateRouter } from '../../client/server/routes/index.js';
-
-// Mount headless simulation endpoints at /api/simulate
-router.use('/api/simulate', simulateRouter);
-
-// ===========================================
 // API Info
 // ===========================================
 

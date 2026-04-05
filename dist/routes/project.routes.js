@@ -23,7 +23,7 @@ router.get('/workspaces/:workspaceId/projects', (0, auth_middleware_js_1.require
  * @desc    Create a new project
  * @access  Private (Workspace Admin)
  */
-router.post('/workspaces/:workspaceId/projects', (0, auth_middleware_js_1.requireWorkspaceAccess)([index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN, index_js_1.WorkspaceRole.MEMBER]), (0, error_middleware_js_1.validate)(project_validation_js_1.createProjectSchema), (0, error_middleware_js_1.asyncHandler)(project_controller_js_1.projectController.create));
+router.post('/workspaces/:workspaceId/projects', (0, auth_middleware_js_1.requireWorkspaceAccess)(index_js_1.WorkspaceRole.OWNER, index_js_1.WorkspaceRole.ADMIN, index_js_1.WorkspaceRole.MEMBER), (0, error_middleware_js_1.validate)({ body: project_validation_js_1.createProjectSchema }), (0, error_middleware_js_1.asyncHandler)(project_controller_js_1.projectController.create));
 // ===========================================
 // Project Operations
 // ===========================================
@@ -38,25 +38,25 @@ router.get('/:projectId', (0, auth_middleware_js_1.requireProjectAccess)(), (0, 
  * @desc    Update project
  * @access  Private (Project Manager)
  */
-router.patch('/:projectId', (0, auth_middleware_js_1.requireProjectAccess)([index_js_1.ProjectRole.MANAGER]), (0, error_middleware_js_1.validate)(project_validation_js_1.updateProjectSchema), (0, error_middleware_js_1.asyncHandler)(project_controller_js_1.projectController.update));
+router.patch('/:projectId', (0, auth_middleware_js_1.requireProjectAccess)(index_js_1.ProjectRole.MANAGER), (0, error_middleware_js_1.validate)({ body: project_validation_js_1.updateProjectSchema }), (0, error_middleware_js_1.asyncHandler)(project_controller_js_1.projectController.update));
 /**
  * @route   DELETE /api/v1/projects/:projectId
  * @desc    Delete project
  * @access  Private (Project Manager)
  */
-router.delete('/:projectId', (0, auth_middleware_js_1.requireProjectAccess)([index_js_1.ProjectRole.MANAGER]), (0, error_middleware_js_1.asyncHandler)(project_controller_js_1.projectController.delete));
+router.delete('/:projectId', (0, auth_middleware_js_1.requireProjectAccess)(index_js_1.ProjectRole.MANAGER), (0, error_middleware_js_1.asyncHandler)(project_controller_js_1.projectController.delete));
 /**
  * @route   POST /api/v1/projects/:projectId/archive
  * @desc    Archive project
  * @access  Private (Project Manager)
  */
-router.post('/:projectId/archive', (0, auth_middleware_js_1.requireProjectAccess)([index_js_1.ProjectRole.MANAGER]), (0, error_middleware_js_1.asyncHandler)(project_controller_js_1.projectController.archive));
+router.post('/:projectId/archive', (0, auth_middleware_js_1.requireProjectAccess)(index_js_1.ProjectRole.MANAGER), (0, error_middleware_js_1.asyncHandler)(project_controller_js_1.projectController.archive));
 /**
  * @route   POST /api/v1/projects/:projectId/restore
  * @desc    Restore archived project
  * @access  Private (Project Manager)
  */
-router.post('/:projectId/restore', (0, auth_middleware_js_1.requireProjectAccess)([index_js_1.ProjectRole.MANAGER]), (0, error_middleware_js_1.asyncHandler)(project_controller_js_1.projectController.unarchive));
+router.post('/:projectId/restore', (0, auth_middleware_js_1.requireProjectAccess)(index_js_1.ProjectRole.MANAGER), (0, error_middleware_js_1.asyncHandler)(project_controller_js_1.projectController.unarchive));
 // ===========================================
 // Project Members
 // ===========================================
@@ -71,19 +71,19 @@ router.get('/:projectId/members', (0, auth_middleware_js_1.requireProjectAccess)
  * @desc    Add member to project
  * @access  Private (Project Manager)
  */
-router.post('/:projectId/members', (0, auth_middleware_js_1.requireProjectAccess)([index_js_1.ProjectRole.MANAGER]), (0, error_middleware_js_1.validate)(project_validation_js_1.addProjectMemberSchema), (0, error_middleware_js_1.asyncHandler)(project_controller_js_1.projectController.addMember));
+router.post('/:projectId/members', (0, auth_middleware_js_1.requireProjectAccess)(index_js_1.ProjectRole.MANAGER), (0, error_middleware_js_1.validate)({ body: project_validation_js_1.addProjectMemberSchema }), (0, error_middleware_js_1.asyncHandler)(project_controller_js_1.projectController.addMember));
 /**
  * @route   PATCH /api/v1/projects/:projectId/members/:memberId
  * @desc    Update project member role
  * @access  Private (Project Manager)
  */
-router.patch('/:projectId/members/:memberId', (0, auth_middleware_js_1.requireProjectAccess)([index_js_1.ProjectRole.MANAGER]), (0, error_middleware_js_1.validate)(project_validation_js_1.updateProjectMemberSchema), (0, error_middleware_js_1.asyncHandler)(project_controller_js_1.projectController.updateMemberRole));
+router.patch('/:projectId/members/:memberId', (0, auth_middleware_js_1.requireProjectAccess)(index_js_1.ProjectRole.MANAGER), (0, error_middleware_js_1.validate)({ body: project_validation_js_1.updateProjectMemberSchema }), (0, error_middleware_js_1.asyncHandler)(project_controller_js_1.projectController.updateMemberRole));
 /**
  * @route   DELETE /api/v1/projects/:projectId/members/:memberId
  * @desc    Remove member from project
  * @access  Private (Project Manager)
  */
-router.delete('/:projectId/members/:memberId', (0, auth_middleware_js_1.requireProjectAccess)([index_js_1.ProjectRole.MANAGER]), (0, error_middleware_js_1.asyncHandler)(project_controller_js_1.projectController.removeMember));
+router.delete('/:projectId/members/:memberId', (0, auth_middleware_js_1.requireProjectAccess)(index_js_1.ProjectRole.MANAGER), (0, error_middleware_js_1.asyncHandler)(project_controller_js_1.projectController.removeMember));
 // ===========================================
 // Project Activity & Stats
 // ===========================================

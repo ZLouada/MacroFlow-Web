@@ -1,38 +1,108 @@
-import { AuthTokens, AuthenticatedUser } from '../types/index.js';
+import { AuthenticatedUser } from '../types/index.js';
+interface AuthTokens {
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+}
 export declare const authService: {
+    /**
+     * Register a new user
+     */
     register(data: {
         email: string;
         password: string;
-        name: string;
-    }, ipAddress?: string, userAgent?: string): Promise<{
-        tokens: AuthTokens;
+        firstName: string;
+        lastName: string;
+    }): Promise<{
         user: AuthenticatedUser;
     }>;
+    /**
+     * Login user
+     */
     login(data: {
         email: string;
         password: string;
         twoFactorCode?: string;
-    }, ipAddress?: string, userAgent?: string): Promise<{
+        userAgent: string;
+        ipAddress: string;
+    }): Promise<{
         requiresTwoFactor: boolean;
-        tokens?: undefined;
-        user?: undefined;
+        user: null;
+        accessToken: null;
+        refreshToken: null;
+        expiresIn: null;
     } | {
-        tokens: AuthTokens;
         user: AuthenticatedUser;
+        accessToken: string;
+        refreshToken: string;
+        expiresIn: number;
         requiresTwoFactor?: undefined;
     }>;
-    logout(sessionId: string): Promise<void>;
-    refresh(refreshToken: string, ipAddress?: string, userAgent?: string): Promise<AuthTokens>;
-    forgotPassword(email: string): Promise<void>;
-    resetPassword(token: string, newPassword: string): Promise<void>;
+    /**
+     * Logout - invalidate refresh token
+     */
+    logout(refreshToken: string): Promise<void>;
+    /**
+     * Refresh access token
+     */
+    refreshToken(refreshToken: string, userAgent: string, ipAddress: string): Promise<AuthTokens>;
+    /**
+     * Request password reset
+     */
+    requestPasswordReset(email: string): Promise<void>;
+    /**
+     * Reset password with token
+     */
+    resetPassword(token: string, password: string): Promise<void>;
+    /**
+     * Verify email address
+     */
     verifyEmail(token: string): Promise<void>;
-    resendVerification(userId: string): Promise<void>;
-    enable2FA(userId: string): Promise<{
+    /**
+     * Resend verification email (by email address)
+     */
+    resendVerificationEmail(email: string): Promise<void>;
+    /**
+     * Enable two-factor authentication (generates QR code)
+     */
+    enableTwoFactor(userId: string): Promise<{
         secret: string;
         qrCode: string;
     }>;
-    verify2FA(userId: string, code: string): Promise<void>;
-    disable2FA(userId: string, code: string): Promise<void>;
+    /**
+     * Verify and activate two-factor authentication
+     * Returns backup codes on successful activation
+     */
+    verifyAndActivateTwoFactor(userId: string, code: string): Promise<string[]>;
+    /**
+     * Disable two-factor authentication
+     */
+    disableTwoFactor(userId: string, code: string): Promise<void>;
+    /**
+     * Get all active sessions for a user
+     */
+    getUserSessions(userId: string): Promise<{
+        id: string;
+        expiresAt: Date;
+        ipAddress: string | null;
+        userAgent: string | null;
+        createdAt: Date;
+    }[]>;
+    /**
+     * Revoke a specific session
+     */
+    revokeSession(userId: string, sessionId: string): Promise<void>;
+    /**
+     * Revoke all sessions except the current one
+     */
+    revokeAllSessions(userId: string, currentRefreshToken?: string): Promise<void>;
+    /**
+     * Change password (authenticated user)
+     */
+    changePassword(userId: string, currentPassword: string, newPassword: string): Promise<void>;
+    /**
+     * Get current user info
+     */
     getMe(userId: string): Promise<{
         id: string;
         email: string;

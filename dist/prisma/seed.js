@@ -16,7 +16,7 @@ async function main() {
     await prisma.comment.deleteMany();
     await prisma.taskLabel.deleteMany();
     await prisma.task.deleteMany();
-    await prisma.column.deleteMany();
+    await prisma.kanbanColumn.deleteMany();
     await prisma.label.deleteMany();
     await prisma.projectMember.deleteMany();
     await prisma.project.deleteMany();
@@ -24,6 +24,9 @@ async function main() {
     await prisma.scenario.deleteMany();
     await prisma.workspace.deleteMany();
     await prisma.session.deleteMany();
+    await prisma.userPreferences.deleteMany();
+    await prisma.emailVerification.deleteMany();
+    await prisma.passwordReset.deleteMany();
     await prisma.user.deleteMany();
     console.log('Cleaned up existing data');
     // Create admin user
@@ -34,7 +37,10 @@ async function main() {
             password: adminPassword,
             name: 'Admin User',
             role: 'admin',
-            isEmailVerified: true,
+            emailVerified: true,
+            preferences: {
+                create: {},
+            },
         },
     });
     console.log('Created admin user:', admin.email);
@@ -45,8 +51,11 @@ async function main() {
             email: 'john@example.com',
             password: userPassword,
             name: 'John Doe',
-            role: 'user',
-            isEmailVerified: true,
+            role: 'developer',
+            emailVerified: true,
+            preferences: {
+                create: {},
+            },
         },
     });
     const user2 = await prisma.user.create({
@@ -54,8 +63,11 @@ async function main() {
             email: 'jane@example.com',
             password: userPassword,
             name: 'Jane Smith',
-            role: 'user',
-            isEmailVerified: true,
+            role: 'designer',
+            emailVerified: true,
+            preferences: {
+                create: {},
+            },
         },
     });
     const user3 = await prisma.user.create({
@@ -63,8 +75,11 @@ async function main() {
             email: 'bob@example.com',
             password: userPassword,
             name: 'Bob Wilson',
-            role: 'user',
-            isEmailVerified: true,
+            role: 'projectManager',
+            emailVerified: true,
+            preferences: {
+                create: {},
+            },
         },
     });
     console.log('Created demo users');
@@ -114,7 +129,7 @@ async function main() {
             name: 'Website Redesign',
             description: 'Redesign the company website with modern UI/UX',
             workspaceId: workspace.id,
-            createdById: admin.id,
+            createdBy: admin.id,
             status: 'active',
             color: '#6366F1',
             icon: '🎨',
@@ -130,9 +145,9 @@ async function main() {
         ],
     });
     console.log('Added project members');
-    // Create columns
+    // Create columns (using kanbanColumn)
     const columns = await Promise.all([
-        prisma.column.create({
+        prisma.kanbanColumn.create({
             data: {
                 title: 'Backlog',
                 projectId: project.id,
@@ -141,7 +156,7 @@ async function main() {
                 color: '#9CA3AF',
             },
         }),
-        prisma.column.create({
+        prisma.kanbanColumn.create({
             data: {
                 title: 'To Do',
                 projectId: project.id,
@@ -150,7 +165,7 @@ async function main() {
                 color: '#3B82F6',
             },
         }),
-        prisma.column.create({
+        prisma.kanbanColumn.create({
             data: {
                 title: 'In Progress',
                 projectId: project.id,
@@ -160,7 +175,7 @@ async function main() {
                 taskLimit: 5,
             },
         }),
-        prisma.column.create({
+        prisma.kanbanColumn.create({
             data: {
                 title: 'Review',
                 projectId: project.id,
@@ -170,7 +185,7 @@ async function main() {
                 taskLimit: 3,
             },
         }),
-        prisma.column.create({
+        prisma.kanbanColumn.create({
             data: {
                 title: 'Done',
                 projectId: project.id,
@@ -277,7 +292,7 @@ async function main() {
                 status: 'done',
                 priority: 'high',
                 order: 0,
-                completedAt: new Date(),
+                endDate: new Date(),
             },
         }),
         prisma.task.create({
@@ -291,7 +306,7 @@ async function main() {
                 status: 'done',
                 priority: 'high',
                 order: 1,
-                completedAt: new Date(),
+                endDate: new Date(),
             },
         }),
     ]);
@@ -314,17 +329,17 @@ async function main() {
             {
                 content: 'Great progress on this! The mockup looks amazing.',
                 taskId: tasks[3].id,
-                userId: admin.id,
+                authorId: admin.id,
             },
             {
                 content: 'I think we should also consider adding a dark mode option.',
                 taskId: tasks[3].id,
-                userId: user1.id,
+                authorId: user1.id,
             },
             {
                 content: 'The navigation is working well on mobile now. Ready for review.',
                 taskId: tasks[4].id,
-                userId: user1.id,
+                authorId: user1.id,
             },
         ],
     });

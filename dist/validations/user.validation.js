@@ -1,6 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
-exports.listUsersQuerySchema = exports.userIdParamSchema = exports.updatePreferencesSchema = exports.updateUserSchema = void 0;
+exports.searchUsersSchema = exports.updateProfileSchema = exports.listUsersQuerySchema = exports.userIdParamSchema = exports.updatePreferencesSchema = exports.updateUserSchema = void 0;
 const zod_1 = require("zod");
 // ===========================================
 // User Validations
@@ -30,5 +30,17 @@ exports.listUsersQuerySchema = zod_1.z.object({
     role: zod_1.z.enum(['admin', 'coo', 'projectManager', 'teamLead', 'developer', 'designer', 'viewer']).optional(),
     sortBy: zod_1.z.enum(['name', 'email', 'createdAt']).default('createdAt'),
     sortOrder: zod_1.z.enum(['asc', 'desc']).default('desc'),
+});
+exports.updateProfileSchema = zod_1.z.object({
+    name: zod_1.z.string().min(2).max(100).optional(),
+    avatar: zod_1.z.string().url().optional().nullable(),
+    timezone: zod_1.z.string().optional(),
+    bio: zod_1.z.string().max(500).optional(),
+});
+exports.searchUsersSchema = zod_1.z.object({
+    query: zod_1.z.string().min(1).max(100).optional(),
+    workspaceId: zod_1.z.string().cuid().optional(),
+    projectId: zod_1.z.string().cuid().optional(),
+    limit: zod_1.z.string().default('10').transform(Number),
 });
 //# sourceMappingURL=user.validation.js.map
