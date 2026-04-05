@@ -5,7 +5,11 @@
  * Handles authentication tokens, request/response interceptors, and error handling.
  */
 
-const API_BASE_URL = import.meta.env.VITE_API_URL || '/api/v1';
+// In production, VITE_API_URL must be set to your Railway backend URL
+// In development, it falls back to relative path (proxied by Vite)
+const API_BASE_URL = import.meta.env.VITE_API_URL 
+  ? `${import.meta.env.VITE_API_URL}/api/v1`
+  : '/api/v1';
 
 // ============================================================================
 // Types

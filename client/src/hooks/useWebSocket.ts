@@ -19,7 +19,9 @@ type EventHandler<T = unknown> = (event: WebSocketEvent<T>) => void;
 
 export function useWebSocket(options: UseWebSocketOptions = {}) {
   const {
-    url = import.meta.env.VITE_WS_URL || 'ws://localhost:3001',
+    // In production, use VITE_API_URL (same server handles WebSocket)
+    // In development, fall back to localhost
+    url = import.meta.env.VITE_API_URL || 'http://localhost:3000',
     autoConnect = true,
     reconnectionAttempts = 5,
     reconnectionDelay = 1000,
