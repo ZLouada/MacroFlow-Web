@@ -1,9 +1,17 @@
-import { Queue, Worker, Job, QueueEvents, ConnectionOptions } from 'bullmq';
+import { Queue, QueueEvents, ConnectionOptions } from 'bullmq';
 import { config } from '../config/index';
 import { logger } from '../utils/logger';
 
+// Check if Redis is configured
+const isRedisConfigured = (): boolean => {
+  return !!(config.redis.url && config.redis.url !== 'redis://localhost:6379');
+};
+
 // Parse Redis URL safely
-const parseRedisUrl = (url: string): ConnectionOptions => {
+const parseRedisUrl = (url: string): ConnectionOptions | null => {
+  if (!isRedisConfigured()) {
+    return null;
+  }
   try {
     const parsed = new URL(url);
     return {
@@ -12,16 +20,12 @@ const parseRedisUrl = (url: string): ConnectionOptions => {
       password: parsed.password || config.redis.password || undefined,
     };
   } catch {
-    return {
-      host: 'localhost',
-      port: 6379,
-      password: config.redis.password || undefined,
-    };
+    return null;
   }
 };
 
-// Redis connection options for BullMQ
-export const redisConnection: ConnectionOptions = parseRedisUrl(config.redis.url);
+// Redis connection options for BullMQ (null if not configured)
+export const redisConnection: ConnectionOptions | null = parseRedisUrl(config.redis.url);
 
 // Queue names
 export const QUEUE_NAMES = {
@@ -82,87 +86,84 @@ export interface AnalyticsJobData {
   metadata?: Record<string, any>;
 }
 
-// Create queues
-export const emailQueue = new Queue<EmailJobData>(QUEUE_NAMES.EMAIL, {
-  connection: redisConnection,
+// Create queues only if Redis is configured
+const createQueue = <T>(name: string, options: any): Queue<T> | null => {
+  if (!redisConnection) {
+    return null;
+  }
+  return new Queue<T>(name, {
+    connection: redisConnection,
+    ...options,
+  });
+};
+
+const defaultEmailOptions = {
   defaultJobOptions: {
     attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000,
-    },
+    backoff: { type: 'exponential', delay: 1000 },
     removeOnComplete: 100,
     removeOnFail: 500,
   },
-});
+};
 
-export const notificationQueue = new Queue<NotificationJobData>(QUEUE_NAMES.NOTIFICATIONS, {
-  connection: redisConnection,
+const defaultNotificationOptions = {
   defaultJobOptions: {
     attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 500,
-    },
+    backoff: { type: 'exponential', delay: 500 },
     removeOnComplete: 100,
     removeOnFail: 500,
   },
-});
+};
 
-export const activityLogQueue = new Queue<ActivityLogJobData>(QUEUE_NAMES.ACTIVITY_LOG, {
-  connection: redisConnection,
+const defaultActivityOptions = {
   defaultJobOptions: {
     attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 500,
-    },
+    backoff: { type: 'exponential', delay: 500 },
     removeOnComplete: 1000,
     removeOnFail: 500,
   },
-});
+};
 
-export const fileCleanupQueue = new Queue<FileCleanupJobData>(QUEUE_NAMES.FILE_CLEANUP, {
-  connection: redisConnection,
+const defaultFileCleanupOptions = {
   defaultJobOptions: {
     attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 2000,
-    },
+    backoff: { type: 'exponential', delay: 2000 },
     removeOnComplete: 100,
     removeOnFail: 100,
   },
-});
+};
 
-export const simulationQueue = new Queue<SimulationJobData>(QUEUE_NAMES.SIMULATION, {
-  connection: redisConnection,
+const defaultSimulationOptions = {
   defaultJobOptions: {
     attempts: 2,
-    backoff: {
-      type: 'exponential',
-      delay: 5000,
-    },
+    backoff: { type: 'exponential', delay: 5000 },
     removeOnComplete: 50,
     removeOnFail: 100,
   },
-});
+};
 
-export const analyticsQueue = new Queue<AnalyticsJobData>(QUEUE_NAMES.ANALYTICS, {
-  connection: redisConnection,
+const defaultAnalyticsOptions = {
   defaultJobOptions: {
     attempts: 3,
-    backoff: {
-      type: 'exponential',
-      delay: 1000,
-    },
+    backoff: { type: 'exponential', delay: 1000 },
     removeOnComplete: 1000,
     removeOnFail: 500,
   },
-});
+};
+
+// Queues (null if Redis not configured)
+export const emailQueue = createQueue<EmailJobData>(QUEUE_NAMES.EMAIL, defaultEmailOptions);
+export const notificationQueue = createQueue<NotificationJobData>(QUEUE_NAMES.NOTIFICATIONS, defaultNotificationOptions);
+export const activityLogQueue = createQueue<ActivityLogJobData>(QUEUE_NAMES.ACTIVITY_LOG, defaultActivityOptions);
+export const fileCleanupQueue = createQueue<FileCleanupJobData>(QUEUE_NAMES.FILE_CLEANUP, defaultFileCleanupOptions);
+export const simulationQueue = createQueue<SimulationJobData>(QUEUE_NAMES.SIMULATION, defaultSimulationOptions);
+export const analyticsQueue = createQueue<AnalyticsJobData>(QUEUE_NAMES.ANALYTICS, defaultAnalyticsOptions);
 
 // Queue events for monitoring
-export const createQueueEvents = (queueName: string) => {
+export const createQueueEvents = (queueName: string): QueueEvents | null => {
+  if (!redisConnection) {
+    return null;
+  }
   const events = new QueueEvents(queueName, { connection: redisConnection });
 
   events.on('completed', ({ jobId }) => {
@@ -180,47 +181,73 @@ export const createQueueEvents = (queueName: string) => {
   return events;
 };
 
-// Helper functions for adding jobs
+// Helper functions for adding jobs (no-op if Redis not configured)
 export const addEmailJob = async (data: EmailJobData, priority?: number) => {
+  if (!emailQueue) {
+    logger.debug('Redis not configured, skipping email job', { type: data.type });
+    return null;
+  }
   return emailQueue.add('send-email', data, { priority });
 };
 
 export const addNotificationJob = async (data: NotificationJobData, delay?: number) => {
+  if (!notificationQueue) {
+    logger.debug('Redis not configured, skipping notification job');
+    return null;
+  }
   return notificationQueue.add('create-notification', data, { delay });
 };
 
 export const addActivityLogJob = async (data: ActivityLogJobData) => {
+  if (!activityLogQueue) {
+    logger.debug('Redis not configured, skipping activity log job');
+    return null;
+  }
   return activityLogQueue.add('log-activity', data);
 };
 
 export const addFileCleanupJob = async (data: FileCleanupJobData, delay?: number) => {
+  if (!fileCleanupQueue) {
+    logger.debug('Redis not configured, skipping file cleanup job');
+    return null;
+  }
   return fileCleanupQueue.add('cleanup-files', data, { delay });
 };
 
 export const addSimulationJob = async (data: SimulationJobData) => {
+  if (!simulationQueue) {
+    logger.debug('Redis not configured, skipping simulation job');
+    return null;
+  }
   return simulationQueue.add('run-simulation', data);
 };
 
 export const addAnalyticsJob = async (data: AnalyticsJobData) => {
+  if (!analyticsQueue) {
+    logger.debug('Redis not configured, skipping analytics job');
+    return null;
+  }
   return analyticsQueue.add('track-analytics', data);
 };
 
 // Graceful shutdown
 export const closeQueues = async () => {
+  if (!redisConnection) {
+    logger.info('No queues to close (Redis not configured)');
+    return;
+  }
   logger.info('Closing job queues...');
-  await Promise.all([
-    emailQueue.close(),
-    notificationQueue.close(),
-    activityLogQueue.close(),
-    fileCleanupQueue.close(),
-    simulationQueue.close(),
-    analyticsQueue.close(),
-  ]);
+  const queues = [emailQueue, notificationQueue, activityLogQueue, fileCleanupQueue, simulationQueue, analyticsQueue];
+  await Promise.all(queues.filter(q => q !== null).map(q => q!.close()));
   logger.info('All queues closed');
 };
 
 // Health check for queues
 export const getQueueHealth = async () => {
+  if (!redisConnection) {
+    return { status: 'disabled', message: 'Redis not configured' };
+  }
+
   const queues = [
     { name: QUEUE_NAMES.EMAIL, queue: emailQueue },
     { name: QUEUE_NAMES.NOTIFICATIONS, queue: notificationQueue },
@@ -232,6 +259,9 @@ export const getQueueHealth = async () => {
 
   const health = await Promise.all(
     queues.map(async ({ name, queue }) => {
+      if (!queue) {
+        return { name, status: 'disabled' };
+      }
       try {
         const [waiting, active, completed, failed] = await Promise.all([
           queue.getWaitingCount(),

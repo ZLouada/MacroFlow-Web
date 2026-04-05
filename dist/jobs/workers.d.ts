@@ -1,11 +1,11 @@
 import { Worker } from 'bullmq';
 import { EmailJobData, NotificationJobData, ActivityLogJobData, FileCleanupJobData, SimulationJobData, AnalyticsJobData } from './queue';
-declare const emailWorker: Worker<EmailJobData, any, string>;
-declare const notificationWorker: Worker<NotificationJobData, any, string>;
-declare const activityLogWorker: Worker<ActivityLogJobData, any, string>;
-declare const fileCleanupWorker: Worker<FileCleanupJobData, any, string>;
-declare const simulationWorker: Worker<SimulationJobData, any, string>;
-declare const analyticsWorker: Worker<AnalyticsJobData, any, string>;
+declare let emailWorker: Worker<EmailJobData> | null;
+declare let notificationWorker: Worker<NotificationJobData> | null;
+declare let activityLogWorker: Worker<ActivityLogJobData> | null;
+declare let fileCleanupWorker: Worker<FileCleanupJobData> | null;
+declare let simulationWorker: Worker<SimulationJobData> | null;
+declare let analyticsWorker: Worker<AnalyticsJobData> | null;
 export declare const closeWorkers: () => Promise<void>;
 export declare const startWorkers: () => void;
 export { emailWorker, notificationWorker, activityLogWorker, fileCleanupWorker, simulationWorker, analyticsWorker, };

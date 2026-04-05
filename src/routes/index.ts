@@ -97,9 +97,16 @@ router.get('/health/detailed', async (req: Request, res: Response) => {
   // Check queues
   try {
     const queues = await getQueueHealth();
-    health.services.queues = {
-      status: queues.every((q: any) => q.status === 'healthy') ? 'healthy' : 'degraded',
-    };
+    if (Array.isArray(queues)) {
+      health.services.queues = {
+        status: queues.every((q: any) => q.status === 'healthy' || q.status === 'disabled') ? 'healthy' : 'degraded',
+      };
+    } else {
+      // Redis not configured - queues disabled
+      health.services.queues = {
+        status: 'disabled',
+      };
+    }
   } catch (error) {
     health.services.queues = {
       status: 'unknown',

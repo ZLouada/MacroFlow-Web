@@ -1,5 +1,5 @@
-import { Queue, Job, QueueEvents, ConnectionOptions } from 'bullmq';
-export declare const redisConnection: ConnectionOptions;
+import { Queue, QueueEvents, ConnectionOptions } from 'bullmq';
+export declare const redisConnection: ConnectionOptions | null;
 export declare const QUEUE_NAMES: {
     readonly EMAIL: "email-queue";
     readonly NOTIFICATIONS: "notifications-queue";
@@ -49,21 +49,29 @@ export interface AnalyticsJobData {
     action: string;
     metadata?: Record<string, any>;
 }
-export declare const emailQueue: Queue<EmailJobData, any, string, EmailJobData, any, string>;
-export declare const notificationQueue: Queue<NotificationJobData, any, string, NotificationJobData, any, string>;
-export declare const activityLogQueue: Queue<ActivityLogJobData, any, string, ActivityLogJobData, any, string>;
-export declare const fileCleanupQueue: Queue<FileCleanupJobData, any, string, FileCleanupJobData, any, string>;
-export declare const simulationQueue: Queue<SimulationJobData, any, string, SimulationJobData, any, string>;
-export declare const analyticsQueue: Queue<AnalyticsJobData, any, string, AnalyticsJobData, any, string>;
-export declare const createQueueEvents: (queueName: string) => QueueEvents;
-export declare const addEmailJob: (data: EmailJobData, priority?: number) => Promise<Job<EmailJobData, any, string>>;
-export declare const addNotificationJob: (data: NotificationJobData, delay?: number) => Promise<Job<NotificationJobData, any, string>>;
-export declare const addActivityLogJob: (data: ActivityLogJobData) => Promise<Job<ActivityLogJobData, any, string>>;
-export declare const addFileCleanupJob: (data: FileCleanupJobData, delay?: number) => Promise<Job<FileCleanupJobData, any, string>>;
-export declare const addSimulationJob: (data: SimulationJobData) => Promise<Job<SimulationJobData, any, string>>;
-export declare const addAnalyticsJob: (data: AnalyticsJobData) => Promise<Job<AnalyticsJobData, any, string>>;
+export declare const emailQueue: Queue<EmailJobData, any, string, EmailJobData, any, string> | null;
+export declare const notificationQueue: Queue<NotificationJobData, any, string, NotificationJobData, any, string> | null;
+export declare const activityLogQueue: Queue<ActivityLogJobData, any, string, ActivityLogJobData, any, string> | null;
+export declare const fileCleanupQueue: Queue<FileCleanupJobData, any, string, FileCleanupJobData, any, string> | null;
+export declare const simulationQueue: Queue<SimulationJobData, any, string, SimulationJobData, any, string> | null;
+export declare const analyticsQueue: Queue<AnalyticsJobData, any, string, AnalyticsJobData, any, string> | null;
+export declare const createQueueEvents: (queueName: string) => QueueEvents | null;
+export declare const addEmailJob: (data: EmailJobData, priority?: number) => Promise<import("bullmq").Job<EmailJobData, any, string> | null>;
+export declare const addNotificationJob: (data: NotificationJobData, delay?: number) => Promise<import("bullmq").Job<NotificationJobData, any, string> | null>;
+export declare const addActivityLogJob: (data: ActivityLogJobData) => Promise<import("bullmq").Job<ActivityLogJobData, any, string> | null>;
+export declare const addFileCleanupJob: (data: FileCleanupJobData, delay?: number) => Promise<import("bullmq").Job<FileCleanupJobData, any, string> | null>;
+export declare const addSimulationJob: (data: SimulationJobData) => Promise<import("bullmq").Job<SimulationJobData, any, string> | null>;
+export declare const addAnalyticsJob: (data: AnalyticsJobData) => Promise<import("bullmq").Job<AnalyticsJobData, any, string> | null>;
 export declare const closeQueues: () => Promise<void>;
 export declare const getQueueHealth: () => Promise<({
+    name: "email-queue" | "notifications-queue" | "activity-log-queue" | "file-cleanup-queue" | "simulation-queue" | "analytics-queue";
+    status: string;
+    waiting?: undefined;
+    active?: undefined;
+    completed?: undefined;
+    failed?: undefined;
+    error?: undefined;
+} | {
     name: "email-queue" | "notifications-queue" | "activity-log-queue" | "file-cleanup-queue" | "simulation-queue" | "analytics-queue";
     status: string;
     waiting: number;
@@ -79,5 +87,8 @@ export declare const getQueueHealth: () => Promise<({
     active?: undefined;
     completed?: undefined;
     failed?: undefined;
-})[]>;
+})[] | {
+    status: string;
+    message: string;
+}>;
 //# sourceMappingURL=queue.d.ts.map
