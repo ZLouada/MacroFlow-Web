@@ -95,7 +95,7 @@ export const authService = {
   /**
    * Register a new user
    */
-  async register(data: { email: string; password: string; firstName: string; lastName: string }) {
+  async register(data: { email: string; password: string; name: string }) {
     const existingUser = await prisma.user.findUnique({
       where: { email: data.email.toLowerCase() },
     });
@@ -105,13 +105,12 @@ export const authService = {
     }
 
     const hashedPassword = await bcrypt.hash(data.password, SALT_ROUNDS);
-    const name = `${data.firstName} ${data.lastName}`.trim();
 
     const user = await prisma.user.create({
       data: {
         email: data.email.toLowerCase(),
         password: hashedPassword,
-        name,
+        name: data.name,
         preferences: {
           create: {},
         },

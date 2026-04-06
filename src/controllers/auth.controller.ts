@@ -12,13 +12,12 @@ export const authController = {
    */
   async register(req: AuthenticatedRequest, res: Response, next: NextFunction) {
     try {
-      const { email, password, firstName, lastName } = req.body;
+      const { email, password, name } = req.body;
       
       const result = await authService.register({
         email,
         password,
-        firstName,
-        lastName,
+        name,
       });
 
       res.status(201).json({
