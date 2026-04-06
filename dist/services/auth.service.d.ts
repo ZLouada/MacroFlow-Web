@@ -11,8 +11,7 @@ export declare const authService: {
     register(data: {
         email: string;
         password: string;
-        firstName: string;
-        lastName: string;
+        name: string;
     }): Promise<{
         user: AuthenticatedUser;
     }>;

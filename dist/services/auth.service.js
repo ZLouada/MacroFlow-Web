@@ -77,12 +77,11 @@ exports.authService = {
             throw new errors_1.ConflictError('Email already registered');
         }
         const hashedPassword = await bcryptjs_1.default.hash(data.password, SALT_ROUNDS);
-        const name = `${data.firstName} ${data.lastName}`.trim();
         const user = await database_1.prisma.user.create({
             data: {
                 email: data.email.toLowerCase(),
                 password: hashedPassword,
-                name,
+                name: data.name,
                 preferences: {
                     create: {},
                 },
